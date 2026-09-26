@@ -354,6 +354,9 @@ body::before {
 .tray,
 .lid-inside,
 .spine-inner { transform: translateZ(0); }
+.stage.is-shut .tray,
+.stage.is-shut .lid-inside,
+.stage.is-shut .spine-inner { visibility: hidden; }
 .back {
   position: absolute;
   inset: 0;
@@ -567,11 +570,11 @@ body::before {
   z-index: -1;
   inset: 2% 2% 0;
   border-radius: 4px;
-  background: rgb(0 0 0 / .5);
-  filter: blur(3px);
+  background: rgb(0 0 0 / .4);
+  box-shadow: 0 0 4px 2px rgb(0 0 0 / .35);
   transform: translateY(3px);
   scale: var(--shadow-sx) 1;
-  transition: filter 200ms ease, opacity 200ms ease, transform 200ms ease;
+  transition: box-shadow 200ms ease, opacity 200ms ease, transform 200ms ease;
 }
 @property --shadow-sx { syntax: "<number>"; inherits: true; initial-value: 1; }
 .cart {
@@ -794,7 +797,8 @@ body::before {
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
-.press-arrow { letter-spacing: 0; margin-left: 2px; text-decoration: none; display: inline-block; }
+.press-arrow { letter-spacing: 0; margin-left: 3px; text-decoration: none; display: inline-block; vertical-align: .05em; }
+.press-arrow svg { display: block; }
 .press-link:hover { color: color-mix(in srgb, var(--game-color) 55%, var(--paper-ink)); }
 .press-link:focus-visible { outline: 2px solid var(--paper-ink); outline-offset: 2px; }
 .store-link {
@@ -898,7 +902,7 @@ body::before {
   }
 }
 @media (max-width: 700px) {
-  .room { gap: 28px; padding: 24px 16px 52px; }
+  .room { gap: 28px; padding: 54px 16px 52px; }
   .wordmark { width: 172px; }
 }
 .bg-canvas { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
@@ -1007,7 +1011,7 @@ body::before { opacity: .15; z-index: 0; }
 .cart-drop[role="button"] { cursor: pointer; }
 .cart-drop[role="button"] .cart { transition: transform 200ms ease; }
 .cart-drop[role="button"]:hover .cart { transform: translateY(-4px); transition: transform 320ms var(--spring); }
-.cart-drop[role="button"]:hover::before { filter: blur(6px); opacity: .8; transform: translateY(4px) scale(1.02); }
+.cart-drop[role="button"]:hover::before { box-shadow: 0 0 9px 4px rgb(0 0 0 / .3); opacity: .8; transform: translateY(4px) scale(1.02); }
 .cart-drop[role="button"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .cart-back { display: none; }
 .cart-drop.is-flipped .cart-label,

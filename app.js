@@ -254,6 +254,11 @@
   fitShelf();
   window.addEventListener("resize", fitShelf);
   if (document.fonts) document.fonts.ready.then(fitShelf);
+  const arrowIcon = () => {
+    const span = h("span", { class: "press-arrow", "aria-hidden": "true" });
+    span.innerHTML = '<svg viewBox="0 0 10 10" width="8" height="8"><path d="M2.5 7.5l5-5M3.5 2.5h4v4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    return span;
+  };
   function fillCase(game) {
     paint(stage, game);
     const wearSeed = hash(game.title);
@@ -324,7 +329,7 @@
     linksEl.hidden = !platforms.length && !game.presskit && !game.trailer;
     const extra = (url, text, label) => url && h("a", {
       class: "press-link", href: url, target: "_blank", rel: "noopener", "aria-label": `${label} (opens in a new tab)`
-    }, text, h("span", { class: "press-arrow", "aria-hidden": "true" }, "\u2197"));
+    }, text, arrowIcon());
     const press = extra(game.presskit, "Press kit", `Press kit for ${game.title}`);
     const trailer = extra(game.trailer, "YouTube", `Watch the ${game.title} trailer on YouTube`);
     linksEl.replaceChildren(h("div", { class: "info-links-body" },
@@ -451,12 +456,14 @@
     const start = shelfPose(btn);
     caseEl.style.transform = start;
     setHinges(90);
+    stage.classList.add("is-shut");
     btn.classList.add("is-out");
     room.inert = true;
     closeBtn.focus({ preventScroll: true });
     if (reduceMotion.matches) {
       caseEl.style.transform = openPose();
       setHinges(0);
+      stage.classList.remove("is-shut");
       await Promise.all([fade(backdrop, 0, 1, 200), fade(closeBtn, 0, 1, 200), fade(pager, 0, 1, 200), fade(caseShadow, 0, 1, 200)]);
     } else {
       fade(backdrop, 0, 1, 420);
@@ -470,6 +477,7 @@
       await play(caseEl, [{ transform: start }, { transform: frontPose() }], SWING_MS, "cubic-bezier(.3, .1, .2, 1)");
       const OPEN_EASE = "cubic-bezier(.4, .05, .2, 1)";
       fade(caseShadow, 0, 1, 700);
+      stage.classList.remove("is-shut");
       setTimeout(() => {
         landing = caseEl.animate(thump("", 2), { duration: 900, composite: "add" });
         landing.finished.then(() => { landing = null; }, () => {});
@@ -500,6 +508,7 @@
         play(caseEl, [{ transform: openPose() }, { transform: frontPose() }], 480, CLOSE_EASE),
         swingHinges(0, 90, 480, CLOSE_EASE)
       ]);
+      stage.classList.add("is-shut");
       fade(backdrop, 1, 0, 560);
       await play(caseEl, [{ transform: frontPose() }, { transform: end }], 560, "cubic-bezier(.45, 0, .2, 1)");
     }
