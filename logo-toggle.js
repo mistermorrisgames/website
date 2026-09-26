@@ -1,5 +1,5 @@
 (() => {
-  const OPTIONS = [["Purple", "purple"], ["Orange", "orange"]];
+  const OPTIONS = [["Purple", "purple"], ["Orange", "orange"], ["Avatar orange", "avatar"]];
   const KEY = "logo-colour";
   let saved = "purple";
   try { saved = localStorage.getItem(KEY) || saved; } catch {   }

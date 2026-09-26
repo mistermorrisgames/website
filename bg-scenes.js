@@ -100,7 +100,15 @@
     notchColour: "rgba(22, 12, 8, .96)",
     hazeHue: 252, smokeTint: [0.7, 0.55, 1]
   };
-  const logoLook = () => (document.documentElement.dataset.logo === "orange" ? LOGO_ORANGE : LOGO);
+  const LOGO_AVATAR = {
+    ...LOGO, glow: [255, 163, 82], bloom: "rgba(255, 196, 150, .18)",
+    ramp: [[0, [97, 24, 81]], [0.18, [135, 53, 85]], [0.32, [196, 92, 84]], [0.46, [240, 136, 78]], [0.6, [255, 163, 82]],
+      [0.92, [253, 219, 196]], [1.3, [255, 247, 240]]],
+    notchColour: "rgba(52, 10, 42, .97)",
+    hazeHue: 252, smokeTint: [0.7, 0.55, 1]
+  };
+  const LOOKS = { purple: LOGO, orange: LOGO_ORANGE, avatar: LOGO_AVATAR };
+  const logoLook = () => LOOKS[document.documentElement.dataset.logo] || LOGO;
   function rampAt(ramp, k) {
     k = Math.max(0, Math.min(ramp[ramp.length - 1][0], k));
     let i = 1;
