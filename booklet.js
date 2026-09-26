@@ -23,12 +23,13 @@ window.Booklet = (() => {
   prevBtn.innerHTML = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   nextBtn.innerHTML = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const count = el("p", "reader-count", { "aria-live": "polite" });
+  const dots = el("div", "reader-dots", { "aria-hidden": "true" });
   const zoom = el("button", "reader-zoom", { type: "button", "aria-label": "Close the enlarged screenshot" });
   zoom.hidden = true;
   const zoomImg = el("img", "", { alt: "" });
   zoom.append(zoomImg);
   bookWrap.append(book);
-  reader.append(backdrop, bookWrap, prevBtn, nextBtn, count, closeBtn, zoom);
+  reader.append(backdrop, bookWrap, prevBtn, nextBtn, count, dots, closeBtn, zoom);
   document.body.append(reader);
   let game = null, shots = [], from = null, view = 0, busy = false;
   let pending = null;
@@ -36,7 +37,8 @@ window.Booklet = (() => {
   const lastView = () => shots.length;
   function size() {
     const vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
-    const H = Math.round(Math.min(vh * 0.78, (vw - 160) / (2 * PAGE_RATIO)));
+    const room = narrowScreen.matches ? 16 : 160;
+    const H = Math.round(Math.min(vh * 0.78, (vw - room) / (2 * PAGE_RATIO)));
     P = Math.round(H * PAGE_RATIO);
     reader.style.setProperty("--page-w", `${P}px`);
     reader.style.setProperty("--page-h", `${H}px`);
@@ -66,6 +68,7 @@ window.Booklet = (() => {
     prevBtn.setAttribute("aria-label", view <= 1 ? "Close the booklet" : "Previous page");
     nextBtn.setAttribute("aria-label", view === lastView() ? "Close the booklet" : "Next page");
     count.textContent = view === 0 ? "" : `${view} / ${shots.length}`;
+    dots.replaceChildren(...shots.map((_, i) => el("span", i + 1 === view ? "is-current" : "")));
   }
   function pageSlot(where, content) {
     const s = el("div", `page page-${where}`);
@@ -128,18 +131,83 @@ window.Booklet = (() => {
   function preload(v) {
     if (shots[v - 1]) { const im = new Image(); im.src = shots[v - 1]; }
   }
+  let zs = 1, zx = 0, zy = 0;
+  const touches = new Map();
+  let pinch = null, moved = false, tapped = false;
+  const showZoom = (smooth) => {
+    zoomImg.style.transition = smooth ? "transform 200ms ease" : "none";
+    zoomImg.style.transform = `translate(${zx}px, ${zy}px) scale(${zs})`;
+  };
+  function clampPan() {
+    const r = zoomImg.getBoundingClientRect();
+    const w = r.width / zs, hgt = r.height / zs;
+    const mx = Math.max(0, (w * zs - w) / 2), my = Math.max(0, (hgt * zs - hgt) / 2);
+    zx = Math.max(-mx, Math.min(mx, zx));
+    zy = Math.max(-my, Math.min(my, zy));
+  }
   function openZoom(i) {
     zoomImg.src = shots[i];
     zoomImg.alt = `Screenshot ${i + 1} of ${game.title}`;
+    zs = 1; zx = 0; zy = 0; showZoom(false);
     zoom.hidden = false;
     if (!reduceMotion.matches) zoom.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
     zoom.focus();
   }
   function closeZoom() {
     zoom.hidden = true;
-    nextBtn.focus();
+    touches.clear(); pinch = null;
+    (narrowScreen.matches ? closeBtn : nextBtn).focus({ preventScroll: true });
   }
-  zoom.addEventListener("click", closeZoom);
+  const spread = () => {
+    const [a, b] = [...touches.values()];
+    return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  };
+  zoom.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse") return;
+    try { zoom.setPointerCapture(e.pointerId); } catch {   }
+    touches.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY });
+    if (touches.size === 1) moved = false;
+    if (touches.size === 2) {
+      const s = spread();
+      pinch = { d: s.d, x: s.x, y: s.y, zs, zx, zy };
+      moved = true;
+    }
+  });
+  zoom.addEventListener("pointermove", (e) => {
+    const t = touches.get(e.pointerId);
+    if (!t) return;
+    const lastX = t.x, lastY = t.y;
+    t.x = e.clientX; t.y = e.clientY;
+    if (Math.hypot(t.x - t.x0, t.y - t.y0) > 8) moved = true;
+    if (touches.size >= 2 && pinch) {
+      const s = spread();
+      const r = zoom.getBoundingClientRect();
+      const cx = pinch.x - (r.left + r.width / 2), cy = pinch.y - (r.top + r.height / 2);
+      zs = Math.max(1, Math.min(4, pinch.zs * s.d / pinch.d));
+      const k = zs / pinch.zs;
+      zx = cx - (cx - pinch.zx) * k + (s.x - pinch.x);
+      zy = cy - (cy - pinch.zy) * k + (s.y - pinch.y);
+    } else if (touches.size === 1 && zs > 1) {
+      zx += t.x - lastX; zy += t.y - lastY;
+    } else return;
+    clampPan();
+    showZoom(false);
+  });
+  const lift = (e) => {
+    if (!touches.delete(e.pointerId)) return;
+    if (touches.size < 2) pinch = null;
+    if (touches.size) return;
+    if (zs < 1.02) { zs = 1; zx = 0; zy = 0; showZoom(true); }
+    if (moved || e.type === "pointercancel") return;
+    tapped = true;
+    if (zs > 1) { zs = 1; zx = 0; zy = 0; showZoom(true); } else closeZoom();
+  };
+  zoom.addEventListener("pointerup", lift);
+  zoom.addEventListener("pointercancel", lift);
+  zoom.addEventListener("click", () => {
+    if (tapped) { tapped = false; return; }
+    closeZoom();
+  });
   let dragged = false;
   book.addEventListener("click", (e) => {
     if (dragged || busy) return;
@@ -148,8 +216,11 @@ window.Booklet = (() => {
     if (t) openZoom(Number(t.dataset.shot));
   });
   let start = null;
-  book.addEventListener("pointerdown", (e) => { start = { x: e.clientX, y: e.clientY }; dragged = false; });
-  book.addEventListener("pointerup", (e) => {
+  reader.addEventListener("pointerdown", (e) => {
+    if (!zoom.hidden || e.target.closest("button:not(.reader-zoom)")) return;
+    start = { x: e.clientX, y: e.clientY }; dragged = false;
+  });
+  reader.addEventListener("pointerup", (e) => {
     if (!start) return;
     const dx = e.clientX - start.x, dy = e.clientY - start.y;
     start = null;
@@ -159,11 +230,11 @@ window.Booklet = (() => {
       request(dx < 0 ? forward : backward);
     }
   });
-  book.addEventListener("pointercancel", () => { start = null; });
+  reader.addEventListener("pointercancel", () => { start = null; });
   prevBtn.addEventListener("click", () => request(backward));
   nextBtn.addEventListener("click", () => request(forward));
   closeBtn.addEventListener("click", () => request(close));
-  backdrop.addEventListener("click", () => request(close));
+  backdrop.addEventListener("click", () => { if (!dragged) request(close); });
   reader.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       e.preventDefault(); e.stopPropagation();
@@ -182,7 +253,6 @@ window.Booklet = (() => {
   });
   window.addEventListener("resize", () => {
     if (reader.hidden || busy) return;
-    if (narrowScreen.matches) { close(); return; }
     size(); render();
   });
   function flyFrom(target) {
@@ -194,7 +264,7 @@ window.Booklet = (() => {
     return `translate(${dx}px, ${dy}px) scale(${a.width / b.width}, ${a.height / b.height})`;
   }
   function open(g, fromEl) {
-    if (!g || !(g.screenshots || []).length || narrowScreen.matches || !reader.hidden) return false;
+    if (!g || !(g.screenshots || []).length || !reader.hidden) return false;
     game = g; shots = g.screenshots.slice(); from = fromEl; view = 0; pending = null;
     reader.style.setProperty("--game-color", getComputedStyle(fromEl || document.body).getPropertyValue("--game-color") || "#888");
     reader.hidden = false;
@@ -211,7 +281,7 @@ window.Booklet = (() => {
       flip(1).then(done);
     }
     preload(1); preload(2);
-    nextBtn.focus({ preventScroll: true });
+    (narrowScreen.matches ? closeBtn : nextBtn).focus({ preventScroll: true });
     return true;
   }
   function close() {
@@ -235,5 +305,5 @@ window.Booklet = (() => {
     book.animate([{ transform: "none", opacity: 1 }, { transform: endPose, opacity: 0 }], { duration: 360, easing: "cubic-bezier(.4, 0, .6, 1)", fill: "forwards" })
       .finished.then(finish);
   }
-  return { open, close, isOpen: () => !reader.hidden, available: () => !narrowScreen.matches };
+  return { open, close, isOpen: () => !reader.hidden, available: () => true };
 })();

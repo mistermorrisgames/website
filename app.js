@@ -2,6 +2,7 @@
   "use strict";
   const GAMES = window.GAMES || [];
   const SITE = window.SITE || {};
+  document.addEventListener("gesturestart", (e) => e.preventDefault());
   const $ = (sel) => document.querySelector(sel);
   const room = $("#room");
   const shelfRow = $("#shelf-row");
