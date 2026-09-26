@@ -81,11 +81,11 @@
   const NOTCH = ["1,2,2", "2,2,2", "2,2,1", "1,1,2", "2,1,1"];
   const LOGO = {
     notch: NOTCH, glow: [140, 110, 255], opacity: 1,
-    ramp: [[0, [26, 16, 78]], [0.5, [92, 74, 200]], [0.8, [150, 136, 240]], [1, [218, 210, 255]]],
+    ramp: [[0, [26, 16, 78]], [0.5, [92, 74, 200]], [0.8, [150, 136, 240]], [1, [218, 210, 255]], [1.3, [250, 248, 255]]],
     notchColour: "rgba(16, 9, 44, .95)", reach: 0.8, light: [-0.35, 0.62, -0.4]
   };
   function rampAt(ramp, k) {
-    k = Math.max(0, Math.min(1, k));
+    k = Math.max(0, Math.min(ramp[ramp.length - 1][0], k));
     let i = 1;
     while (i < ramp.length - 1 && ramp[i][0] < k) i++;
     const [k0, c0] = ramp[i - 1], [k1, c1] = ramp[i];
@@ -312,11 +312,11 @@
     if (it === null || it >= INTRO.END - 0.4) document.documentElement.classList.remove("intro-wait");
     const playing = it !== null && it < INTRO.END;
     const reveal = playing ? introReveal(it) : 1;
-    const top = oy - size * 3.2, bottom = oy + size * 3.2;
     const tone = (k) => {
-      const grad = cl.createLinearGradient(0, top, 0, bottom);
-      grad.addColorStop(0, rampAt(look.ramp, k + 0.1));
-      grad.addColorStop(1, rampAt(look.ramp, k - 0.12));
+      const grad = cl.createRadialGradient(ox, oy - size * 0.5, 0, ox, oy - size * 0.5, size * 4);
+      grad.addColorStop(0, rampAt(look.ramp, k + 0.3));
+      grad.addColorStop(0.45, rampAt(look.ramp, k + 0.05));
+      grad.addColorStop(1, rampAt(look.ramp, k - 0.18));
       return grad;
     };
     const paint = (faces, alpha) => {
@@ -349,7 +349,11 @@
         cl.fill(); cl.stroke();
       }
       lctx.globalAlpha = alpha;
+      lctx.shadowColor = "rgba(170, 150, 255, .6)";
+      lctx.shadowBlur = size * 1.4;
       lctx.drawImage(cubeLayer, 0, 0, lw, lh);
+      lctx.shadowColor = "transparent";
+      lctx.shadowBlur = 0;
       lctx.globalAlpha = 1;
     };
     if (playing) {
