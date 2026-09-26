@@ -29,10 +29,31 @@
     web: "web.svg", itch: "itchdotio.svg", mobile: "mobile.svg"
   };
   const platformName = (p) => PLATFORM_NAMES[p] || p;
+  const iconMarkup = new Map();
+  function inlineIcon(file) {
+    if (!iconMarkup.has(file)) {
+      iconMarkup.set(file, fetch(`images/platforms/${file}`).then((r) => r.text()).then((text) => {
+        const svg = new DOMParser().parseFromString(text, "image/svg+xml").documentElement;
+        if (svg.nodeName !== "svg" || !svg.getAttribute("viewBox")) return null;
+        svg.querySelectorAll("title").forEach((t) => t.remove());
+        svg.removeAttribute("role");
+        svg.setAttribute("fill", "currentColor");
+        svg.setAttribute("aria-hidden", "true");
+        const markup = new XMLSerializer().serializeToString(svg);
+        iconMarkup.set(file, markup);
+        return markup;
+      }).catch(() => null));
+    }
+    return iconMarkup.get(file);
+  }
   function platformIcon(p) {
     const file = PLATFORM_ICONS[p];
     if (!file) return h("span", { class: "platform-tag" }, platformName(p).toUpperCase());
-    return h("span", { class: "platform-icon", "data-platform": p, style: `--icon: url("images/platforms/${file}")` });
+    const icon = h("span", { class: "platform-icon", "data-platform": p, style: `--icon: url("images/platforms/${file}")` });
+    const use = (markup) => { if (markup) { icon.innerHTML = markup; icon.classList.add("is-inline"); } };
+    const known = inlineIcon(file);
+    if (typeof known === "string") use(known); else known.then(use);
+    return icon;
   }
   function linkPlatform(link) {
     if (link.platform) return link.platform;

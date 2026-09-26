@@ -63,16 +63,6 @@ body::before {
   height: auto;
   margin: 0 auto;
 }
-.hint {
-  margin: 12px 0 0;
-  padding-left: .24em;
-  font: 500 12px/1.4 var(--font-display);
-  letter-spacing: .24em;
-  text-transform: uppercase;
-  color: rgb(241 228 207 / .66);
-  transition: opacity 600ms ease;
-}
-.intro-wait .hint { opacity: 0; transition-duration: 0s; }
 .shelf {
   display: flex;
   flex-direction: column;
@@ -261,6 +251,8 @@ body::before {
   -webkit-mask: var(--icon) center / contain no-repeat;
   mask: var(--icon) center / contain no-repeat;
 }
+.platform-icon.is-inline { background: none; -webkit-mask: none; mask: none; }
+.platform-icon svg { display: block; width: 100%; height: 100%; }
 .platform-icon[data-platform="switch"],
 .platform-icon[data-platform="mobile"] { transform: scale(.86); }
 .platform-tag {

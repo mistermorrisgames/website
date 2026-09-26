@@ -23,9 +23,9 @@
   const between = (a, b) => a + rand() * (b - a);
   const blobs = Array.from({ length: 7 }, (_, i) => ({
     a: (i / 7) * Math.PI * 2, r: between(0.04, 0.16), speed: between(0.03, 0.07) * (i % 2 ? 1 : -1),
-    size: between(0.28, 0.5), alpha: between(0.07, 0.12), hue: between(252, 272)
+    size: between(0.28, 0.5), alpha: between(0.07, 0.12), hue: between(0, 20)
   }));
-  function drawFog(t) {
+  function drawFog(t, look) {
     const m = Math.min(w, h);
     ctx.globalCompositeOperation = "lighter";
     for (const b of blobs) {
@@ -33,37 +33,46 @@
       const x = w / 2 + Math.cos(a) * b.r * w;
       const y = h * 0.47 + Math.sin(a * 1.3) * b.r * h * 0.6;
       const r = b.size * m * (1 + Math.sin(t * 0.2 + b.a) * 0.08);
+      const hue = look.hazeHue + b.hue;
       const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, `hsla(${b.hue}, 70%, 62%, ${b.alpha})`);
-      g.addColorStop(0.45, `hsla(${b.hue}, 70%, 50%, ${b.alpha * 0.45})`);
-      g.addColorStop(1, `hsla(${b.hue}, 70%, 40%, 0)`);
+      g.addColorStop(0, `hsla(${hue}, 75%, 58%, ${b.alpha})`);
+      g.addColorStop(0.45, `hsla(${hue}, 75%, 48%, ${b.alpha * 0.45})`);
+      g.addColorStop(1, `hsla(${hue}, 75%, 38%, 0)`);
       ctx.fillStyle = g;
       ctx.fillRect(x - r, y - r, r * 2, r * 2);
     }
     ctx.globalCompositeOperation = "source-over";
   }
   const SMOKE = 512;
-  const smoke = document.createElement("canvas");
-  smoke.width = smoke.height = SMOKE;
-  let smokeReady = false;
-  const noise = new Image();
-  noise.onload = () => {
-    const s = smoke.getContext("2d");
-    s.drawImage(noise, 0, 0, SMOKE, SMOKE);
-    s.globalCompositeOperation = "destination-in";
-    const g = s.createRadialGradient(SMOKE / 2, SMOKE / 2, 0, SMOKE / 2, SMOKE / 2, SMOKE / 2);
-    g.addColorStop(0, "rgba(0,0,0,1)");
-    g.addColorStop(0.55, "rgba(0,0,0,.6)");
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    s.fillStyle = g;
-    s.fillRect(0, 0, SMOKE, SMOKE);
-    smokeReady = true;
-    frame(clock);
-  };
-  noise.src = "data:image/svg+xml;utf8," + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${SMOKE}" height="${SMOKE}"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".006" numOctaves="5" seed="3"/><feColorMatrix values="0 0 0 0 .7  0 0 0 0 .55  0 0 0 0 1  1.9 0 0 0 -.72"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>`);
-  function drawSmoke(t) {
-    if (!smokeReady) return;
+  const smokes = new Map();
+  function smokeFor(tint) {
+    const key = tint.join(" ");
+    if (smokes.has(key)) return smokes.get(key);
+    const tex = document.createElement("canvas");
+    tex.width = tex.height = SMOKE;
+    smokes.set(key, null);
+    const noise = new Image();
+    noise.onload = () => {
+      const s = tex.getContext("2d");
+      s.drawImage(noise, 0, 0, SMOKE, SMOKE);
+      s.globalCompositeOperation = "destination-in";
+      const g = s.createRadialGradient(SMOKE / 2, SMOKE / 2, 0, SMOKE / 2, SMOKE / 2, SMOKE / 2);
+      g.addColorStop(0, "rgba(0,0,0,1)");
+      g.addColorStop(0.55, "rgba(0,0,0,.6)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      s.fillStyle = g;
+      s.fillRect(0, 0, SMOKE, SMOKE);
+      smokes.set(key, tex);
+      frame(clock);
+    };
+    const [r, gr, b] = tint;
+    noise.src = "data:image/svg+xml;utf8," + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${SMOKE}" height="${SMOKE}"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".006" numOctaves="5" seed="3"/><feColorMatrix values="0 0 0 0 ${r}  0 0 0 0 ${gr}  0 0 0 0 ${b}  1.9 0 0 0 -.72"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>`);
+    return null;
+  }
+  function drawSmoke(t, look) {
+    const smoke = smokeFor(look.smokeTint);
+    if (!smoke) return;
     const size = Math.max(w, h) * 0.95;
     ctx.globalCompositeOperation = "lighter";
     for (const [dir, alpha, k] of [[1, 0.32, 1], [-1, 0.24, 1.25]]) {
@@ -82,12 +91,14 @@
   const LOGO = {
     notch: NOTCH, glow: [140, 110, 255], bloom: "rgba(190, 170, 255, .2)", opacity: 1,
     ramp: [[0, [26, 16, 78]], [0.5, [92, 74, 200]], [0.8, [150, 136, 240]], [1, [218, 210, 255]], [1.3, [250, 248, 255]]],
-    notchColour: "rgba(16, 9, 44, .95)", reach: 0.8, light: [-0.35, 0.62, -0.4]
+    notchColour: "rgba(16, 9, 44, .95)", reach: 0.8, light: [-0.35, 0.62, -0.4],
+    hazeHue: 18, smokeTint: [1, 0.55, 0.2]
   };
   const LOGO_ORANGE = {
     ...LOGO, glow: null, bloom: null,
     ramp: [[0, [168, 64, 8]], [0.45, [228, 118, 18]], [0.75, [244, 151, 25]], [1, [255, 214, 146]], [1.3, [255, 250, 238]]],
-    notchColour: "rgba(22, 12, 8, .96)"
+    notchColour: "rgba(22, 12, 8, .96)",
+    hazeHue: 252, smokeTint: [0.7, 0.55, 1]
   };
   const logoLook = () => (document.documentElement.dataset.logo === "orange" ? LOGO_ORANGE : LOGO);
   function rampAt(ramp, k) {
@@ -255,7 +266,7 @@
   function drawCube(t, look) {
     if (!introSeen) {
       introSeen = true;
-      if (!motion.matches) { introStart = t; document.documentElement.classList.add("intro-wait"); }
+      if (!motion.matches) introStart = t;
     }
     const box = header.getBoundingClientRect();
     const cx = box.left + box.width / 2, cy = box.top + box.height / 2;
@@ -317,7 +328,6 @@
     };
     const it = introStart !== null ? t - introStart : null;
     if (it !== null && it >= INTRO.END) introStart = null;
-    if (it === null || it >= INTRO.END - 0.4) document.documentElement.classList.remove("intro-wait");
     const playing = it !== null && it < INTRO.END;
     const reveal = playing ? introReveal(it) : 1;
     const tone = (k) => {
@@ -415,9 +425,10 @@
   function frame(t) {
     if (!canvas.width || !canvas.height) return;
     ctx.clearRect(0, 0, w, h);
-    drawFog(t);
-    drawSmoke(t);
-    drawCube(t, logoLook());
+    const look = logoLook();
+    drawFog(t, look);
+    drawSmoke(t, look);
+    drawCube(t, look);
   }
   let raf = 0, clock = 0, last = null;
   function loop(now) {
@@ -437,7 +448,6 @@
   });
   window.Motion.onChange(() => {
     last = null;
-    if (motion.matches) document.documentElement.classList.remove("intro-wait");
     frame(clock); schedule();
   });
   if (stage) new MutationObserver(schedule).observe(stage, { attributes: true, attributeFilter: ["hidden"] });
