@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mister Morris Games</title>
+  <meta name="description" content="Indie games by Mister Morris Games. Pick a case off the shelf.">
+  <meta name="theme-color" content="#15100c">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <meta property="og:image" content="https://mistermorrisgames.github.io/website/images/share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Cover art for Haiku, the Robot; Rusty's Retirement; Skatehouse; and Pegs X Stickers">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mistermorrisgames.github.io/website/">
+  <meta property="og:title" content="Mister Morris Games">
+  <meta property="og:description" content="Indie games by Mister Morris Games. Pick a case off the shelf.">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Noto+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <noscript>
+    <p class="noscript">This shelf needs JavaScript to open the cases. You can find all my games on
+      <a href="https://store.steampowered.com/publisher/MisterMorrisGames">Steam</a>.</p>
+  </noscript>
+  <main class="room" id="room">
+    <header class="masthead">
+      <h1 class="studio-name">
+        <picture>
+          <source media="(max-width: 700px)" srcset="images/wordmark-stacked-white.svg" width="164" height="83">
+          <img class="wordmark" id="studio-name" src="images/wordmark-white.svg" alt="Mister Morris Games" width="485" height="26">
+        </picture>
+      </h1>
+      <p class="hint">Choose a game</p>
+    </header>
+    <section class="shelf" aria-label="Games">
+      <ul class="shelf-row" id="shelf-row"></ul>
+    </section>
+    <footer class="site-footer">
+      <button type="button" class="about-link" id="about-link" aria-haspopup="dialog">About</button>
+      <span class="site-footer-sep" aria-hidden="true">·</span>
+      <small>&copy; <span id="copyright-year">2026</span> Mister Morris Games</small>
+    </footer>
+  </main>
+  <dialog class="about" id="about" aria-labelledby="about-title">
+    <button type="button" class="about-close" id="about-close">
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="visually-hidden">Close</span>
+    </button>
+    <span class="about-logo" aria-hidden="true"></span>
+    <h2 class="about-title" id="about-title">About</h2>
+    <p class="about-heading" id="about-heading"></p>
+    <div class="about-body" id="about-body"></div>
+  </dialog>
+  <div class="stage" id="stage" hidden>
+    <div class="backdrop" id="backdrop"></div>
+    <div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="case-title" aria-describedby="case-desc">
+      <button type="button" class="close-btn" id="close-btn">
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span class="visually-hidden">Close</span>
+      </button>
+      <div class="pager" id="pager">
+        <button type="button" class="pager-dot" data-panel="0" aria-label="Show game details"></button>
+        <button type="button" class="pager-dot" data-panel="1" aria-label="Show manual and cartridge"></button>
+      </div>
+      <div class="case-shadow" id="case-shadow" aria-hidden="true"></div>
+      <div class="case-anchor">
+        <div class="case" id="case">
+          <div class="back">
+            <div class="face tray">
+              <div class="panel-content">
+                <div class="manual-wrap" id="manual-wrap"></div>
+                <div class="cart-drop" aria-hidden="true"><div class="cart" id="case-cart"></div></div>
+              </div>
+            </div>
+            <div class="face edge edge-top" aria-hidden="true"></div>
+            <div class="face edge edge-bottom" aria-hidden="true"></div>
+            <div class="face edge edge-right" aria-hidden="true"></div>
+            <div class="spine-hinge" id="spine-hinge">
+              <div class="face spine-inner" aria-hidden="true"></div>
+              <div class="face spine-face" id="case-spine" aria-hidden="true"></div>
+              <div class="lid" id="lid">
+                <div class="face lid-inside">
+                  <div class="panel-content">
+                    <div class="info-card" id="info-card" tabindex="0" role="region" aria-label="Game details"></div>
+                    <section class="info-links" id="info-links" aria-labelledby="info-links-title"></section>
+                  </div>
+                </div>
+                <div class="face lid-front" id="case-front" aria-hidden="true"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="motion.js"></script>
+  <script src="games.js"></script>
+  <script src="booklet.js"></script>
+  <script src="cartridge.js"></script>
+  <script src="app.js"></script>
+  <script src="bg-scenes.js"></script>
+  <script src="about.js"></script>
+</body>
+</html>

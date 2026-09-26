@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-26.98 -31.00 53.96 62.00">
+  <defs>
+    <mask id="shade" maskUnits="userSpaceOnUse" x="-26.98" y="-31" width="53.96" height="62">
+      <path fill="#fff" fill-rule="evenodd" stroke="#fff" stroke-width=".3" stroke-linejoin="round" d="M-25.98 -15L-17.32 -10L-8.66 -15L0 -10L8.66 -15L17.32 -10L25.98 -15L0 -30Z"/>
+      <path fill="#c8c8c8" fill-rule="evenodd" stroke="#c8c8c8" stroke-width=".3" stroke-linejoin="round" d="M-17.32 10L-8.66 15L-8.66 5L0 10L0 30L-25.98 15L-25.98 -15L-17.32 -10Z"/>
+      <path fill="#8f8f8f" fill-rule="evenodd" stroke="#8f8f8f" stroke-width=".3" stroke-linejoin="round" d="M0 10L8.66 5L8.66 15L17.32 10L17.32 -10L25.98 -15L25.98 15L0 30Z"/>
+    </mask>
+  </defs>
+  <rect x="-26.98" y="-31" width="53.96" height="62" fill="#fff" mask="url(#shade)"/>
+</svg>
