@@ -37,7 +37,8 @@ Forge your own path through the dying land of Arcadia: dodge, dash and slash thr
     trailer: "https://www.youtube.com/watch?v=j2DWMQ_USxg",
     screenshots: ["images/screenshots/haiku-1.webp", "images/screenshots/haiku-2.webp", "images/screenshots/haiku-3.webp", "images/screenshots/haiku-4.webp"],
     links: [
-      { label: "Play on Steam", url: "https://store.steampowered.com/app/1231880/Haiku_the_Robot/" }
+      { label: "Play on Steam", url: "https://store.steampowered.com/app/1231880/Haiku_the_Robot/" },
+      { label: "Play on Nintendo Switch", url: "https://www.nintendo.com/us/store/products/haiku-the-robot-switch/" }
     ]
   },
   {
