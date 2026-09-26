@@ -1,8 +1,9 @@
 (() => {
-  const OPTIONS = [["Purple", "purple"], ["Orange", "orange"], ["Orange #FFA352", "avatar"]];
+  const OPTIONS = [["Purple", "purple"], ["Orange", "orange"]];
   const KEY = "logo-colour";
   let saved = "purple";
   try { saved = localStorage.getItem(KEY) || saved; } catch {   }
+  if (saved === "avatar") saved = "orange";
   const panel = document.createElement("div");
   panel.setAttribute("role", "group");
   panel.setAttribute("aria-label", "Logo colour (temporary)");

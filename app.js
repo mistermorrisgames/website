@@ -543,11 +543,19 @@
     state = "open";
     if (closeRequested) closeCase();
   }
+  let lastPointer = null;
+  window.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "mouse") lastPointer = { x: e.clientX, y: e.clientY };
+  }, { passive: true });
   async function closeCase() {
     if (state === "opening") { closeRequested = true; return; }
     if (state !== "open") return;
     state = "closing";
     const btn = spines[current];
+    const r = btn.getBoundingClientRect();
+    if (lastPointer && lastPointer.x >= r.left && lastPointer.x <= r.right && lastPointer.y >= r.top && lastPointer.y <= r.bottom) {
+      btn.classList.add("is-lifted");
+    }
     const end = shelfPose(btn);
     if (landing) landing.cancel();
     if (reduceMotion.matches) {
@@ -569,6 +577,7 @@
     stage.hidden = true;
     room.inert = false;
     btn.focus({ preventScroll: true });
+    requestAnimationFrame(() => btn.classList.remove("is-lifted"));
     state = "closed";
   }
   closeBtn.addEventListener("click", closeCase);

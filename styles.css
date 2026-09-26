@@ -139,10 +139,12 @@ body::before {
 }
 .spine:hover,
 .spine:focus-visible,
-.spine:active { transform: translateY(-14px) scale(1.03); transition-timing-function: var(--spring); }
+.spine:active,
+.spine.is-lifted { transform: translateY(-14px) scale(1.03); transition-timing-function: var(--spring); }
 .spine:hover::before,
 .spine:focus-visible::before,
-.spine:active::before { opacity: 1; }
+.spine:active::before,
+.spine.is-lifted::before { opacity: 1; }
 .spine:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .spine.is-out { visibility: hidden; transition: none; }
 .spine-art {
@@ -871,7 +873,8 @@ body::before {
   }
   .spine:hover,
   .spine:focus-visible,
-  .spine:active { transform: scale(1.04); z-index: 1; transition-timing-function: var(--spring); }
+  .spine:active,
+  .spine.is-lifted { transform: scale(1.04); z-index: 1; transition-timing-function: var(--spring); }
   .spine::before { box-shadow: 0 10px 18px -4px rgb(0 0 0 / .6), 0 0 24px rgb(var(--lamp) / .22); }
   .spine .spine-art {
     inset: auto;
