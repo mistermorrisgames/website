@@ -71,11 +71,42 @@
   }
   const paragraphs = (text) =>
     String(text || "").split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean).map((t) => h("p", {}, t));
+  let logoMarkup = null;
+  function inlineLogo(text) {
+    const svg = new DOMParser().parseFromString(text, "image/svg+xml").documentElement;
+    const box = svg.getAttribute("viewBox");
+    const shapes = [...svg.querySelectorAll("path, polygon, rect, circle, ellipse")]
+      .filter((el) => el.closest("mask") && el.getAttribute("fill") && el.getAttribute("fill") !== "none");
+    if (!box || !shapes.length) return null;
+    const light = (c) => {
+      const m = /^#([0-9a-f]{6})$/i.exec(c.trim());
+      if (!m) return 1;
+      const n = parseInt(m[1], 16);
+      return +((((n >> 16) & 255) + ((n >> 8) & 255) + (n & 255)) / 765).toFixed(3);
+    };
+    const parts = shapes.map((el) => {
+      const copy = el.cloneNode(true);
+      copy.setAttribute("fill", "currentColor");
+      copy.setAttribute("fill-opacity", String(light(el.getAttribute("fill"))));
+      copy.removeAttribute("stroke");
+      copy.removeAttribute("stroke-width");
+      return new XMLSerializer().serializeToString(copy).replace(/ xmlns="[^"]*"/g, "");
+    });
+    return `<svg viewBox="${box}" aria-hidden="true">${parts.join("")}</svg>`;
+  }
+  const useInlineLogo = (el) => { el.innerHTML = logoMarkup; el.classList.add("is-inline"); };
+  if (SITE.logo) {
+    fetch(SITE.logo).then((r) => r.text()).then((text) => {
+      logoMarkup = inlineLogo(text);
+      if (logoMarkup) document.querySelectorAll(".studio-logo--image").forEach(useInlineLogo);
+    }).catch(() => {});
+  }
   function studioLogo() {
     if (!SITE.logo) return h("span", { class: "studio-logo studio-logo--text" }, SITE.logoText || "");
     const logo = h("span", { class: "studio-logo studio-logo--image" });
     logo.style.setProperty("--logo", `url("${SITE.logo}")`);
     if (SITE.logoColor) logo.style.color = SITE.logoColor;
+    if (logoMarkup) useInlineLogo(logo);
     return logo;
   }
   function spineArt(game) {

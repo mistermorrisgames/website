@@ -188,15 +188,7 @@ body::before {
   color: var(--case-color);
 }
 .spine-logo { width: 22px; height: 22px; }
-.spine-logo--image { position: relative; width: 20px; height: 20px; border-radius: 0; background: none; color: var(--case-ink); }
-.spine-logo--image .studio-logo--image {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 200%;
-  height: 200%;
-  transform: translate(-50%, -50%) scale(.5);
-}
+.spine-logo--image { width: 20px; height: 20px; border-radius: 0; background: none; color: var(--case-ink); }
 .spine-top {
   flex: none;
   aspect-ratio: 3 / 4;
@@ -242,6 +234,8 @@ body::before {
   -webkit-mask: var(--logo) center / contain no-repeat;
   mask: var(--logo) center / contain no-repeat;
 }
+.studio-logo--image.is-inline { background: none; -webkit-mask: none; mask: none; }
+.studio-logo--image svg { display: block; width: 100%; height: 100%; }
 .spine-title {
   flex: 1 1 auto;
   min-height: 0;
@@ -921,7 +915,8 @@ body {
   background-image: radial-gradient(ellipse 120% 90% at 50% 50%, transparent 45%, rgb(0 0 0 / .6));
 }
 body::before { opacity: .15; z-index: 0; }
-.studio-name { height: 110px; display: grid; place-items: center; cursor: pointer; }
+.studio-name { position: relative; z-index: 0; height: 110px; display: grid; place-items: center; cursor: pointer; }
+.logo-canvas { position: absolute; z-index: -1; pointer-events: none; }
 .wordmark { opacity: 0; }
 @media (max-width: 700px) { .studio-name { height: 96px; } }
 .manual-wrap.is-openable { cursor: pointer; }

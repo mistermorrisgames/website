@@ -60,6 +60,12 @@
     return faces;
   }
   const cubeLayer = document.createElement("canvas");
+  const logoCanvas = document.createElement("canvas");
+  logoCanvas.className = "logo-canvas";
+  logoCanvas.setAttribute("aria-hidden", "true");
+  const lctx = logoCanvas.getContext("2d");
+  let lw = 0, lh = 0, ldpr = 0;
+  const ABOVE = 1.9, BELOW = 1.5, ACROSS = 3.2;
   const cl = cubeLayer.getContext("2d");
   const pointer = { x: 0, y: 0, px: null, py: null };
   const noMouse = window.matchMedia("(hover: none)");
@@ -188,9 +194,23 @@
       if (!motion.matches) { introStart = t; document.documentElement.classList.add("intro-wait"); }
     }
     const box = header.getBoundingClientRect();
-    let cx = box.left + box.width / 2, cy = box.top + box.height / 2;
+    const cx = box.left + box.width / 2, cy = box.top + box.height / 2;
     const size = box.height / 5;
     const glowSize = box.height * 1.4, glowAlpha = 0.1;
+    const wantW = Math.round(box.height * ACROSS), wantH = Math.round(box.height * (ABOVE + BELOW));
+    if (wantW !== lw || wantH !== lh || dpr !== ldpr) {
+      lw = wantW; lh = wantH; ldpr = dpr;
+      logoCanvas.width = Math.round(lw * dpr); logoCanvas.height = Math.round(lh * dpr);
+      Object.assign(logoCanvas.style, {
+        width: `${lw}px`, height: `${lh}px`,
+        left: `${(box.width - lw) / 2}px`, top: `${box.height / 2 - box.height * ABOVE}px`
+      });
+    }
+    if (!logoCanvas.isConnected) header.append(logoCanvas);
+    lctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    lctx.clearRect(0, 0, lw, lh);
+    const ox = lw / 2;
+    let oy = box.height * ABOVE;
     const intro = introStart !== null && t - introStart < INTRO.END;
     if (intro && t - introStart < 0.1) { facing.x = 0; facing.y = 0; }
     const target = intro || noMouse.matches || pointer.px === null ? { x: 0, y: 0 }
@@ -205,20 +225,21 @@
     if (introStart !== null) {
       const kick = introKick(t - introStart);
       ax -= kick * 0.22;
-      cy += kick * size * 0.12;
+      oy += kick * size * 0.12;
     }
     const [sy, cyw] = [Math.sin(ay), Math.cos(ay)], [sx, cxr] = [Math.sin(ax), Math.cos(ax)];
     const rot = ([x, y, z]) => {
       const x1 = x * cyw + z * sy, z1 = -x * sy + z * cyw;
       return [x1, y * cxr - z1 * sx, y * sx + z1 * cxr];
     };
-    const project = ([x, y]) => [cx + x * size, cy - y * size];
+    const project = ([x, y]) => [ox + x * size, oy - y * size];
     const [gr, gg, gb] = look.glow;
-    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowSize);
+    const gy = box.height * ABOVE;
+    const glow = lctx.createRadialGradient(ox, gy, 0, ox, gy, glowSize);
     glow.addColorStop(0, `rgba(${gr}, ${gg}, ${gb}, ${glowAlpha})`);
     glow.addColorStop(1, `rgba(${gr}, ${gg}, ${gb}, 0)`);
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, w, h);
+    lctx.fillStyle = glow;
+    lctx.fillRect(0, 0, lw, lh);
     const light = look.light, ll = Math.hypot(...light);
     const shade = (corners, n0, extra) => {
       const n = rot(n0);
@@ -236,11 +257,11 @@
     const [r, g, b] = look.colour;
     const paint = (faces, alpha) => {
       faces.sort((a, b) => (b.cube ?? 0) - (a.cube ?? 0) || b.depth - a.depth);
-      if (cubeLayer.width !== canvas.width || cubeLayer.height !== canvas.height) {
-        cubeLayer.width = canvas.width; cubeLayer.height = canvas.height;
+      if (cubeLayer.width !== logoCanvas.width || cubeLayer.height !== logoCanvas.height) {
+        cubeLayer.width = logoCanvas.width; cubeLayer.height = logoCanvas.height;
       }
       cl.setTransform(dpr, 0, 0, dpr, 0, 0);
-      cl.clearRect(0, 0, w, h);
+      cl.clearRect(0, 0, lw, lh);
       cl.lineJoin = "round";
       if (look.notchColour) {
         cl.beginPath();
@@ -264,28 +285,28 @@
         cl.fillStyle = col; cl.strokeStyle = col; cl.lineWidth = 1;
         cl.fill(); cl.stroke();
       }
-      ctx.globalAlpha = alpha;
-      ctx.drawImage(cubeLayer, 0, 0, w, h);
-      ctx.globalAlpha = 1;
+      lctx.globalAlpha = alpha;
+      lctx.drawImage(cubeLayer, 0, 0, lw, lh);
+      lctx.globalAlpha = 1;
     };
     if (playing) {
-      ctx.lineWidth = 1;
-      ctx.lineJoin = "round";
+      lctx.lineWidth = 1;
+      lctx.lineJoin = "round";
       for (const { at, a } of introTrail(it)) {
         if (a <= 0) continue;
         const o = sub(at, CENTRE), q = (dx, dy, dz) => project(rot([o[0] + dx / 2, o[1] + dy / 2, o[2] + dz / 2]));
-        ctx.beginPath();
+        lctx.beginPath();
         for (const [u, v] of [[0, 1], [1, 2], [2, 0]]) {
           for (const s1 of [-1, 1]) for (const s2 of [-1, 1]) {
             const from = [0, 0, 0], to = [0, 0, 0];
             from[u] = -1; to[u] = 1; from[v] = to[v] = s1;
             const w3 = 3 - u - v; from[w3] = to[w3] = s2;
             const p0 = q(...from), p1 = q(...to);
-            ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]);
+            lctx.moveTo(p0[0], p0[1]); lctx.lineTo(p1[0], p1[1]);
           }
         }
-        ctx.strokeStyle = `rgba(255, 255, 255, ${0.32 * a})`;
-        ctx.stroke();
+        lctx.strokeStyle = `rgba(255, 255, 255, ${0.32 * a})`;
+        lctx.stroke();
       }
     }
     if (reveal > 0) {
