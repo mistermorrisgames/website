@@ -44,7 +44,7 @@ window.Booklet = (() => {
     reader.style.setProperty("--page-h", `${H}px`);
   }
   function face(v, side) {
-    const node = el("div", "face-content");
+    const node = el("div", `face-content side-${side}`);
     if (v === 0) {
       if (side === "right") {
         node.classList.add("is-cover");
@@ -104,12 +104,12 @@ window.Booklet = (() => {
       book.querySelector(".page-right").replaceChildren(face(to, "right"));
       front.append(face(view, "right")); back.append(face(to, "left"));
       leaf.classList.add("on-right");
-      keyframes = [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-180deg)" }];
+      keyframes = [{ transform: "translateZ(1px) rotateY(0deg)" }, { transform: "translateZ(1px) rotateY(-180deg)" }];
     } else {
       book.querySelector(".page-left").replaceChildren(face(to, "left"));
       front.append(face(view, "left")); back.append(face(to, "right"));
       leaf.classList.add("on-left");
-      keyframes = [{ transform: "rotateY(0deg)" }, { transform: "rotateY(180deg)" }];
+      keyframes = [{ transform: "translateZ(1px) rotateY(0deg)" }, { transform: "translateZ(1px) rotateY(180deg)" }];
     }
     const shift = (v) => (v === 0 ? -P / 2 : 0);
     if (shift(view) !== shift(to)) {

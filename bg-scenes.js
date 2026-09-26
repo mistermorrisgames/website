@@ -5,11 +5,10 @@
   canvas.setAttribute("aria-hidden", "true");
   document.body.prepend(canvas);
   const ctx = canvas.getContext("2d");
-  const near = document.createElement("canvas");
-  near.className = "fg-canvas";
-  near.setAttribute("aria-hidden", "true");
-  document.body.append(near);
-  const nctx = near.getContext("2d");
+  const grid = document.createElement("div");
+  grid.className = "bg-grid";
+  grid.setAttribute("aria-hidden", "true");
+  document.body.prepend(grid);
   const stage = document.getElementById("stage");
   const motion = window.Motion;
   let w = 0, h = 0, dpr = 1;
@@ -18,22 +17,59 @@
     w = window.innerWidth; h = window.innerHeight;
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    near.width = canvas.width; near.height = canvas.height;
-    nctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   let seed = 7;
   const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const between = (a, b) => a + rand() * (b - a);
-  seed = 221597993;
-  const motes = Array.from({ length: 45 }, () => ({
-    x: rand(), y: rand(), r: between(0.5, 1.9), sx: between(0.05, 0.13), sy: between(0.04, 0.1),
-    px: between(0, 6.3), py: between(0, 6.3), fall: between(0.002, 0.008), tw: between(0, 6.3)
+  const lights = [[255, 70, 80], [70, 255, 140], [80, 150, 255]].map((rgb) => ({
+    rgb,
+    fx: [between(0.22, 0.34), between(0.45, 0.7)], fy: [between(0.25, 0.38), between(0.5, 0.75)],
+    px: [between(0, 6.3), between(0, 6.3)], py: [between(0, 6.3), between(0, 6.3)]
   }));
+  const lightAt = (l, t) => [
+    w / 2 + w * 0.46 * (0.7 * Math.sin(l.fx[0] * t + l.px[0]) + 0.3 * Math.sin(l.fx[1] * t + l.px[1])),
+    h * 0.5 + h * 0.44 * (0.7 * Math.sin(l.fy[0] * t + l.py[0]) + 0.3 * Math.sin(l.fy[1] * t + l.py[1]))
+  ];
+  const TRAIL_SECONDS = 2.6, TRAIL_STEPS = 64;
+  function drawLights(t) {
+    ctx.globalCompositeOperation = "lighter";
+    ctx.lineCap = "round";
+    for (const l of lights) {
+      const [r, g, b] = l.rgb;
+      let prev = lightAt(l, t - TRAIL_SECONDS);
+      for (let i = 1; i <= TRAIL_STEPS; i++) {
+        const k = i / TRAIL_STEPS;
+        const p = lightAt(l, t - TRAIL_SECONDS * (1 - k));
+        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.5 * k * k})`;
+        ctx.lineWidth = 0.5 + 2.5 * k;
+        ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(p[0], p[1]); ctx.stroke();
+        prev = p;
+      }
+      const [x, y] = prev;
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, 16);
+      glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, .55)`);
+      glow.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+      ctx.fillStyle = glow;
+      ctx.fillRect(x - 16, y - 16, 32, 32);
+      ctx.fillStyle = `rgba(${Math.min(255, r + 120)}, ${Math.min(255, g + 120)}, ${Math.min(255, b + 120)}, .95)`;
+      ctx.beginPath(); ctx.arc(x, y, 2.2, 0, 6.283); ctx.fill();
+    }
+    ctx.globalCompositeOperation = "source-over";
+  }
   const NOTCH = ["1,2,2", "2,2,2", "2,2,1", "1,1,2", "2,1,1"];
   const LOGO = {
-    notch: NOTCH, colour: [255, 255, 255], glow: [255, 200, 140], opacity: 1,
-    notchColour: "rgba(8, 8, 8, .9)", reach: 0.8, light: [-0.35, 0.62, -0.4]
+    notch: NOTCH, glow: [140, 110, 255], opacity: 1,
+    ramp: [[0, [26, 16, 78]], [0.5, [92, 74, 200]], [0.8, [150, 136, 240]], [1, [218, 210, 255]]],
+    notchColour: "rgba(16, 9, 44, .95)", reach: 0.8, light: [-0.35, 0.62, -0.4]
   };
+  function rampAt(ramp, k) {
+    k = Math.max(0, Math.min(1, k));
+    let i = 1;
+    while (i < ramp.length - 1 && ramp[i][0] < k) i++;
+    const [k0, c0] = ramp[i - 1], [k1, c1] = ramp[i];
+    const f = (k - k0) / (k1 - k0 || 1);
+    return `rgb(${c0.map((v, j) => Math.round(v + (c1[j] - v) * f)).join(", ")})`;
+  }
   const faceCache = new Map();
   function cubeFacesFor(notch) {
     const key = notch.join(" ");
@@ -254,7 +290,13 @@
     if (it === null || it >= INTRO.END - 0.4) document.documentElement.classList.remove("intro-wait");
     const playing = it !== null && it < INTRO.END;
     const reveal = playing ? introReveal(it) : 1;
-    const [r, g, b] = look.colour;
+    const top = oy - size * 3.2, bottom = oy + size * 3.2;
+    const tone = (k) => {
+      const grad = cl.createLinearGradient(0, top, 0, bottom);
+      grad.addColorStop(0, rampAt(look.ramp, k + 0.1));
+      grad.addColorStop(1, rampAt(look.ramp, k - 0.12));
+      return grad;
+    };
     const paint = (faces, alpha) => {
       faces.sort((a, b) => (b.cube ?? 0) - (a.cube ?? 0) || b.depth - a.depth);
       if (cubeLayer.width !== logoCanvas.width || cubeLayer.height !== logoCanvas.height) {
@@ -280,8 +322,7 @@
         cl.beginPath();
         f.pts.forEach((p, i) => (i ? cl.lineTo(p[0], p[1]) : cl.moveTo(p[0], p[1])));
         cl.closePath();
-        const k = 0.18 + 0.82 * f.lit ** 1.3;
-        const col = `rgb(${Math.round(r * k)}, ${Math.round(g * k)}, ${Math.round(b * k)})`;
+        const col = tone(0.12 + 0.88 * f.lit ** 1.3);
         cl.fillStyle = col; cl.strokeStyle = col; cl.lineWidth = 1;
         cl.fill(); cl.stroke();
       }
@@ -328,46 +369,12 @@
       }
       paint(faces, look.opacity * (1 - reveal));
     }
-    ctx.globalCompositeOperation = "lighter";
-    for (const p of motes) {
-      const x = ((p.x + 0.03 * Math.sin(t * p.sx + p.px)) % 1 + 1) % 1 * w;
-      const y = ((p.y - p.fall * t + 0.03 * Math.sin(t * p.sy + p.py)) % 1 + 1) % 1 * h;
-      const a = 0.18 + 0.2 * Math.sin(t * 1.1 + p.tw);
-      ctx.fillStyle = `rgba(${gr}, ${Math.min(255, gg + 30)}, ${Math.min(255, gb + 40)}, ${a})`;
-      ctx.beginPath(); ctx.arc(x, y, p.r * 0.9, 0, 6.283); ctx.fill();
-    }
-    ctx.globalCompositeOperation = "source-over";
-  }
-  seed = 1743339919;
-  const nearMotes = Array.from({ length: 9 }, () => ({
-    x: rand(), y: rand(), r: between(1.2, 3), depth: between(0.5, 1),
-    sx: between(0.05, 0.12), sy: between(0.04, 0.1), px: between(0, 6.3), py: between(0, 6.3),
-    rise: between(0.005, 0.012), tw: between(0, 6.3)
-  }));
-  function drawNear(t, look) {
-    const [gr, gg, gb] = look.glow;
-    const col = `${gr}, ${Math.min(255, gg + 30)}, ${Math.min(255, gb + 40)}`;
-    nctx.globalCompositeOperation = "lighter";
-    for (const p of nearMotes) {
-      const x = ((p.x + 0.04 * Math.sin(t * p.sx + p.px)) % 1 + 1) % 1 * w - pointer.x * 16 * p.depth;
-      const y = ((p.y - p.rise * t + 0.04 * Math.sin(t * p.sy + p.py)) % 1 + 1) % 1 * h - pointer.y * 10 * p.depth;
-      const a = 0.14 + 0.1 * Math.sin(t * 0.8 + p.tw);
-      const r = p.r * 3;
-      const g = nctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, `rgba(${col}, ${a})`);
-      g.addColorStop(0.35, `rgba(${col}, ${a * 0.6})`);
-      g.addColorStop(1, `rgba(${col}, 0)`);
-      nctx.fillStyle = g;
-      nctx.fillRect(x - r, y - r, r * 2, r * 2);
-    }
-    nctx.globalCompositeOperation = "source-over";
   }
   function frame(t) {
     if (!canvas.width || !canvas.height) return;
     ctx.clearRect(0, 0, w, h);
-    nctx.clearRect(0, 0, w, h);
+    drawLights(t);
     drawCube(t, LOGO);
-    drawNear(t, LOGO);
   }
   let raf = 0, clock = 0, last = null;
   function loop(now) {

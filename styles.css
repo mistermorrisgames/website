@@ -189,7 +189,8 @@ body::before {
   color: var(--case-color);
 }
 .spine-logo { width: 22px; height: 22px; }
-.spine-logo--image { width: 20px; height: 20px; border-radius: 0; background: none; color: var(--case-ink); }
+.spine-logo--image { position: relative; width: 20px; height: 20px; border-radius: 0; background: none; color: var(--case-ink); }
+.spine-logo--image > .studio-logo--image { position: absolute; inset: 0; width: auto; height: auto; }
 .spine-top {
   flex: none;
   aspect-ratio: 3 / 4;
@@ -910,7 +911,17 @@ body::before {
   .wordmark { width: 172px; }
 }
 .bg-canvas { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
-.fg-canvas { position: fixed; inset: 0; z-index: 4; width: 100%; height: 100%; pointer-events: none; }
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(rgb(255 255 255 / .09) 1px, transparent 1px) 50% 50% / 44px 44px,
+    linear-gradient(90deg, rgb(255 255 255 / .09) 1px, transparent 1px) 50% 50% / 44px 44px;
+  -webkit-mask: radial-gradient(ellipse 75% 70% at 50% 45%, #000 20%, transparent 100%);
+  mask: radial-gradient(ellipse 75% 70% at 50% 45%, #000 20%, transparent 100%);
+}
 body {
   background-color: #120c08;
   background-image: radial-gradient(ellipse 120% 90% at 50% 50%, transparent 45%, rgb(0 0 0 / .6));
@@ -939,7 +950,7 @@ body::before { opacity: .15; z-index: 0; }
   position: relative;
   width: calc(var(--page-w) * 2);
   height: var(--page-h);
-  perspective: 2200px;
+  perspective: calc(var(--page-w) * 5.5);
 }
 .book { position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: 75% 50%; }
 .page, .leaf { position: absolute; top: 0; width: var(--page-w); height: var(--page-h); }
@@ -957,6 +968,8 @@ body::before { opacity: .15; z-index: 0; }
 }
 .leaf.on-left .leaf-shade { background: linear-gradient(270deg, rgb(0 0 0 / .5), transparent 70%); }
 .face-content { position: absolute; inset: 0; overflow: hidden; }
+.face-content.side-left { right: -1px; }
+.face-content.side-right { left: -1px; }
 .face-content.is-cover {
   background-size: cover;
   background-position: center;
