@@ -80,10 +80,16 @@
   }
   const NOTCH = ["1,2,2", "2,2,2", "2,2,1", "1,1,2", "2,1,1"];
   const LOGO = {
-    notch: NOTCH, glow: [140, 110, 255], opacity: 1,
+    notch: NOTCH, glow: [140, 110, 255], bloom: "rgba(190, 170, 255, .2)", opacity: 1,
     ramp: [[0, [26, 16, 78]], [0.5, [92, 74, 200]], [0.8, [150, 136, 240]], [1, [218, 210, 255]], [1.3, [250, 248, 255]]],
     notchColour: "rgba(16, 9, 44, .95)", reach: 0.8, light: [-0.35, 0.62, -0.4]
   };
+  const LOGO_ORANGE = {
+    ...LOGO, glow: [244, 151, 25], bloom: "rgba(255, 180, 90, .2)",
+    ramp: [[0, [66, 26, 4]], [0.5, [190, 96, 12]], [0.8, [244, 151, 25]], [1, [255, 204, 120]], [1.3, [255, 246, 226]]],
+    notchColour: "rgba(38, 15, 3, .95)"
+  };
+  const logoLook = () => (document.documentElement.dataset.logo === "orange" ? LOGO_ORANGE : LOGO);
   function rampAt(ramp, k) {
     k = Math.max(0, Math.min(ramp[ramp.length - 1][0], k));
     let i = 1;
@@ -349,11 +355,17 @@
         cl.fill(); cl.stroke();
       }
       lctx.globalAlpha = alpha;
-      lctx.shadowColor = "rgba(170, 150, 255, .6)";
-      lctx.shadowBlur = size * 1.4;
       lctx.drawImage(cubeLayer, 0, 0, lw, lh);
+      const away = lw * 2;
+      lctx.globalCompositeOperation = "lighter";
+      lctx.shadowColor = look.bloom;
+      lctx.shadowBlur = size * 1.6 * dpr;
+      lctx.shadowOffsetX = away * dpr;
+      lctx.drawImage(cubeLayer, -away, 0, lw, lh);
       lctx.shadowColor = "transparent";
       lctx.shadowBlur = 0;
+      lctx.shadowOffsetX = 0;
+      lctx.globalCompositeOperation = "source-over";
       lctx.globalAlpha = 1;
     };
     if (playing) {
@@ -401,7 +413,7 @@
     ctx.clearRect(0, 0, w, h);
     drawFog(t);
     drawSmoke(t);
-    drawCube(t, LOGO);
+    drawCube(t, logoLook());
   }
   let raf = 0, clock = 0, last = null;
   function loop(now) {
