@@ -85,9 +85,9 @@
     notchColour: "rgba(16, 9, 44, .95)", reach: 0.8, light: [-0.35, 0.62, -0.4]
   };
   const LOGO_ORANGE = {
-    ...LOGO, glow: [244, 151, 25], bloom: "rgba(255, 180, 90, .2)",
-    ramp: [[0, [66, 26, 4]], [0.5, [190, 96, 12]], [0.8, [244, 151, 25]], [1, [255, 204, 120]], [1.3, [255, 246, 226]]],
-    notchColour: "rgba(38, 15, 3, .95)"
+    ...LOGO, glow: null, bloom: null,
+    ramp: [[0, [168, 64, 8]], [0.45, [228, 118, 18]], [0.75, [244, 151, 25]], [1, [255, 214, 146]], [1.3, [255, 250, 238]]],
+    notchColour: "rgba(22, 12, 8, .96)"
   };
   const logoLook = () => (document.documentElement.dataset.logo === "orange" ? LOGO_ORANGE : LOGO);
   function rampAt(ramp, k) {
@@ -297,13 +297,15 @@
       return [x1, y * cxr - z1 * sx, y * sx + z1 * cxr];
     };
     const project = ([x, y]) => [ox + x * size, oy - y * size];
-    const [gr, gg, gb] = look.glow;
-    const gy = box.height * ABOVE;
-    const glow = lctx.createRadialGradient(ox, gy, 0, ox, gy, glowSize);
-    glow.addColorStop(0, `rgba(${gr}, ${gg}, ${gb}, ${glowAlpha})`);
-    glow.addColorStop(1, `rgba(${gr}, ${gg}, ${gb}, 0)`);
-    lctx.fillStyle = glow;
-    lctx.fillRect(0, 0, lw, lh);
+    if (look.glow) {
+      const [gr, gg, gb] = look.glow;
+      const gy = box.height * ABOVE;
+      const glow = lctx.createRadialGradient(ox, gy, 0, ox, gy, glowSize);
+      glow.addColorStop(0, `rgba(${gr}, ${gg}, ${gb}, ${glowAlpha})`);
+      glow.addColorStop(1, `rgba(${gr}, ${gg}, ${gb}, 0)`);
+      lctx.fillStyle = glow;
+      lctx.fillRect(0, 0, lw, lh);
+    }
     const light = look.light, ll = Math.hypot(...light);
     const shade = (corners, n0, extra) => {
       const n = rot(n0);
@@ -357,15 +359,17 @@
       lctx.globalAlpha = alpha;
       lctx.drawImage(cubeLayer, 0, 0, lw, lh);
       const away = lw * 2;
-      lctx.globalCompositeOperation = "lighter";
-      lctx.shadowColor = look.bloom;
-      lctx.shadowBlur = size * 1.6 * dpr;
-      lctx.shadowOffsetX = away * dpr;
-      lctx.drawImage(cubeLayer, -away, 0, lw, lh);
-      lctx.shadowColor = "transparent";
-      lctx.shadowBlur = 0;
-      lctx.shadowOffsetX = 0;
-      lctx.globalCompositeOperation = "source-over";
+      if (look.bloom) {
+        lctx.globalCompositeOperation = "lighter";
+        lctx.shadowColor = look.bloom;
+        lctx.shadowBlur = size * 1.6 * dpr;
+        lctx.shadowOffsetX = away * dpr;
+        lctx.drawImage(cubeLayer, -away, 0, lw, lh);
+        lctx.shadowColor = "transparent";
+        lctx.shadowBlur = 0;
+        lctx.shadowOffsetX = 0;
+        lctx.globalCompositeOperation = "source-over";
+      }
       lctx.globalAlpha = 1;
     };
     if (playing) {
