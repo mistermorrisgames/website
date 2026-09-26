@@ -20,6 +20,7 @@
   --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncR type='linear' slope='2' intercept='-.5'/><feFuncG type='linear' slope='2' intercept='-.5'/><feFuncB type='linear' slope='2' intercept='-.5'/><feFuncA type='table' tableValues='1 1'/></feComponentTransfer></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 *, *::before, *::after { box-sizing: border-box; }
+html { -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; }
 html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body {
@@ -187,7 +188,15 @@ body::before {
   color: var(--case-color);
 }
 .spine-logo { width: 22px; height: 22px; }
-.spine-logo--image { width: 20px; height: 20px; border-radius: 0; background: none; color: var(--case-ink); }
+.spine-logo--image { position: relative; width: 20px; height: 20px; border-radius: 0; background: none; color: var(--case-ink); }
+.spine-logo--image .studio-logo--image {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 200%;
+  height: 200%;
+  transform: translate(-50%, -50%) scale(.5);
+}
 .spine-top {
   flex: none;
   aspect-ratio: 3 / 4;
