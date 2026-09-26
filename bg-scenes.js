@@ -18,6 +18,30 @@
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const between = (a, b) => a + rand() * (b - a);
+  const blobs = Array.from({ length: 7 }, (_, i) => ({
+    a: (i / 7) * Math.PI * 2, r: between(0.04, 0.16), speed: between(0.03, 0.07) * (i % 2 ? 1 : -1),
+    size: between(0.28, 0.5), alpha: between(0.07, 0.12), hue: between(252, 272)
+  }));
+  function drawFog(t) {
+    const m = Math.min(w, h);
+    ctx.globalCompositeOperation = "lighter";
+    for (const b of blobs) {
+      const a = b.a + b.speed * t;
+      const x = w / 2 + Math.cos(a) * b.r * w;
+      const y = h * 0.47 + Math.sin(a * 1.3) * b.r * h * 0.6;
+      const r = b.size * m * (1 + Math.sin(t * 0.2 + b.a) * 0.08);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `hsla(${b.hue}, 70%, 62%, ${b.alpha})`);
+      g.addColorStop(0.45, `hsla(${b.hue}, 70%, 50%, ${b.alpha * 0.45})`);
+      g.addColorStop(1, `hsla(${b.hue}, 70%, 40%, 0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    ctx.globalCompositeOperation = "source-over";
+  }
   const SMOKE = 512;
   const smoke = document.createElement("canvas");
   smoke.width = smoke.height = SMOKE;
@@ -37,7 +61,7 @@
     frame(clock);
   };
   noise.src = "data:image/svg+xml;utf8," + encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${SMOKE}" height="${SMOKE}"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".006" numOctaves="5" seed="3"/><feColorMatrix values="0 0 0 0 .62  0 0 0 0 .74  0 0 0 0 1  1.9 0 0 0 -.72"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>`);
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${SMOKE}" height="${SMOKE}"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".006" numOctaves="5" seed="3"/><feColorMatrix values="0 0 0 0 .7  0 0 0 0 .55  0 0 0 0 1  1.9 0 0 0 -.72"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>`);
   function drawSmoke(t) {
     if (!smokeReady) return;
     const size = Math.max(w, h) * 0.95;
@@ -371,6 +395,7 @@
   function frame(t) {
     if (!canvas.width || !canvas.height) return;
     ctx.clearRect(0, 0, w, h);
+    drawFog(t);
     drawSmoke(t);
     drawCube(t, LOGO);
   }
