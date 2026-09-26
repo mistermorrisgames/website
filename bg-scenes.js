@@ -18,42 +18,40 @@
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-  let seed = 7;
-  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  const between = (a, b) => a + rand() * (b - a);
-  const lights = [[255, 70, 80], [70, 255, 140], [80, 150, 255]].map((rgb) => ({
-    rgb,
-    fx: [between(0.22, 0.34), between(0.45, 0.7)], fy: [between(0.25, 0.38), between(0.5, 0.75)],
-    px: [between(0, 6.3), between(0, 6.3)], py: [between(0, 6.3), between(0, 6.3)]
-  }));
-  const lightAt = (l, t) => [
-    w / 2 + w * 0.46 * (0.7 * Math.sin(l.fx[0] * t + l.px[0]) + 0.3 * Math.sin(l.fx[1] * t + l.px[1])),
-    h * 0.5 + h * 0.44 * (0.7 * Math.sin(l.fy[0] * t + l.py[0]) + 0.3 * Math.sin(l.fy[1] * t + l.py[1]))
-  ];
-  const TRAIL_SECONDS = 2.6, TRAIL_STEPS = 64;
-  function drawLights(t) {
+  const SMOKE = 512;
+  const smoke = document.createElement("canvas");
+  smoke.width = smoke.height = SMOKE;
+  let smokeReady = false;
+  const noise = new Image();
+  noise.onload = () => {
+    const s = smoke.getContext("2d");
+    s.drawImage(noise, 0, 0, SMOKE, SMOKE);
+    s.globalCompositeOperation = "destination-in";
+    const g = s.createRadialGradient(SMOKE / 2, SMOKE / 2, 0, SMOKE / 2, SMOKE / 2, SMOKE / 2);
+    g.addColorStop(0, "rgba(0,0,0,1)");
+    g.addColorStop(0.55, "rgba(0,0,0,.6)");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    s.fillStyle = g;
+    s.fillRect(0, 0, SMOKE, SMOKE);
+    smokeReady = true;
+    frame(clock);
+  };
+  noise.src = "data:image/svg+xml;utf8," + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${SMOKE}" height="${SMOKE}"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".006" numOctaves="5" seed="3"/><feColorMatrix values="0 0 0 0 .62  0 0 0 0 .74  0 0 0 0 1  1.9 0 0 0 -.72"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>`);
+  function drawSmoke(t) {
+    if (!smokeReady) return;
+    const size = Math.max(w, h) * 0.95;
     ctx.globalCompositeOperation = "lighter";
-    ctx.lineCap = "round";
-    for (const l of lights) {
-      const [r, g, b] = l.rgb;
-      let prev = lightAt(l, t - TRAIL_SECONDS);
-      for (let i = 1; i <= TRAIL_STEPS; i++) {
-        const k = i / TRAIL_STEPS;
-        const p = lightAt(l, t - TRAIL_SECONDS * (1 - k));
-        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.5 * k * k})`;
-        ctx.lineWidth = 0.5 + 2.5 * k;
-        ctx.beginPath(); ctx.moveTo(prev[0], prev[1]); ctx.lineTo(p[0], p[1]); ctx.stroke();
-        prev = p;
-      }
-      const [x, y] = prev;
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, 16);
-      glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, .55)`);
-      glow.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
-      ctx.fillStyle = glow;
-      ctx.fillRect(x - 16, y - 16, 32, 32);
-      ctx.fillStyle = `rgba(${Math.min(255, r + 120)}, ${Math.min(255, g + 120)}, ${Math.min(255, b + 120)}, .95)`;
-      ctx.beginPath(); ctx.arc(x, y, 2.2, 0, 6.283); ctx.fill();
+    for (const [dir, alpha, k] of [[1, 0.32, 1], [-1, 0.24, 1.25]]) {
+      ctx.save();
+      ctx.translate(w / 2, h * 0.47);
+      ctx.rotate(dir * t * 0.018 + k);
+      ctx.scale(k, k * 0.8);
+      ctx.globalAlpha = alpha * (0.85 + Math.sin(t * 0.25 + k * 3) * 0.15);
+      ctx.drawImage(smoke, -size / 2, -size / 2, size, size);
+      ctx.restore();
     }
+    ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
   }
   const NOTCH = ["1,2,2", "2,2,2", "2,2,1", "1,1,2", "2,1,1"];
@@ -373,7 +371,7 @@
   function frame(t) {
     if (!canvas.width || !canvas.height) return;
     ctx.clearRect(0, 0, w, h);
-    drawLights(t);
+    drawSmoke(t);
     drawCube(t, LOGO);
   }
   let raf = 0, clock = 0, last = null;
