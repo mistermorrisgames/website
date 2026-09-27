@@ -308,7 +308,7 @@
     document.documentElement.classList.toggle("shot-on", !!src);
   }
   GAMES.forEach((game, i) => {
-    const shot = (game.screenshots || [])[0];
+    const shot = game.backdrop || (game.screenshots || [])[0];
     if (!shot) return;
     const btn = spines[i];
     const on = () => { if (hoverable.matches && state === "closed") showShot(shot); };

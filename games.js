@@ -106,6 +106,7 @@ Buy and place pegs to design high-scoring layouts, supercharge them with unique 
   {
     title: "Coming Soon",
     wip: true,
+    backdrop: "images/screenshots/coming-soon.webp",
     color: "#f2b632",
     platforms: ["steam"],
     cover: "",
