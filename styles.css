@@ -905,7 +905,29 @@ body::before {
   .room { gap: 28px; padding: 54px 16px 52px; }
   .wordmark { width: 172px; }
 }
-.bg-canvas { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+.bg-canvas { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; transition: opacity 220ms ease; }
+.bg-shot {
+  position: fixed;
+  inset: -24px;
+  z-index: -3;
+  pointer-events: none;
+  background: center / cover no-repeat;
+  filter: blur(4px) brightness(.36) saturate(1.05);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+.bg-shot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 55% at 50% 48%, rgb(10 6 4 / .45), rgb(10 6 4 / .1) 100%);
+}
+.bg-shot.is-on { opacity: 1; }
+.bg-grid { transition: opacity 220ms ease; }
+html.shot-on[data-hover-bg="smoke"] .bg-grid,
+html.shot-on[data-hover-bg="neither"] .bg-grid,
+html.shot-on[data-hover-bg="grid"] .bg-canvas,
+html.shot-on[data-hover-bg="neither"] .bg-canvas { opacity: 0; }
 .bg-grid {
   position: fixed;
   inset: 0;

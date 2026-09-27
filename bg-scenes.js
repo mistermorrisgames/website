@@ -89,19 +89,11 @@
   }
   const NOTCH = ["1,2,2", "2,2,2", "2,2,1", "1,1,2", "2,1,1"];
   const LOGO = {
-    notch: NOTCH, glow: [140, 110, 255], bloom: "rgba(190, 170, 255, .2)", opacity: 1,
-    ramp: [[0, [26, 16, 78]], [0.5, [92, 74, 200]], [0.8, [150, 136, 240]], [1, [218, 210, 255]], [1.3, [250, 248, 255]]],
-    notchColour: "rgba(16, 9, 44, .95)", reach: 0.8, light: [-0.35, 0.62, -0.4],
-    hazeHue: 18, smokeTint: [1, 0.55, 0.2]
-  };
-  const LOGO_ORANGE = {
-    ...LOGO, glow: [255, 163, 82], bloom: "rgba(255, 196, 140, .18)",
+    notch: NOTCH, glow: [255, 163, 82], bloom: "rgba(255, 196, 140, .18)", opacity: 1,
     ramp: [[0, [97, 48, 5]], [0.26, [166, 81, 7]], [0.4, [249, 119, 6]], [0.55, [255, 163, 82]], [1, [255, 211, 173]], [1.3, [255, 244, 235]]],
-    notchColour: "rgba(30, 15, 6, .96)",
+    notchColour: "rgba(30, 15, 6, .96)", reach: 0.8, light: [-0.35, 0.62, -0.4],
     hazeHue: 252, smokeTint: [0.7, 0.55, 1]
   };
-  const LOOKS = { purple: LOGO, orange: LOGO_ORANGE };
-  const logoLook = () => LOOKS[document.documentElement.dataset.logo] || LOGO;
   function rampAt(ramp, k) {
     k = Math.max(0, Math.min(ramp[ramp.length - 1][0], k));
     let i = 1;
@@ -426,7 +418,7 @@
   function frame(t) {
     if (!canvas.width || !canvas.height) return;
     ctx.clearRect(0, 0, w, h);
-    const look = logoLook();
+    const look = LOGO;
     drawFog(t, look);
     drawSmoke(t, look);
     drawCube(t, look);
