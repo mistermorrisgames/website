@@ -766,7 +766,7 @@ body::before {
 .info-card .info-meta {
   margin: 12px 0 18px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgb(43 34 28 / .18);
+  border-bottom: 2px solid rgb(43 34 28 / .18);
   font: 600 11.5px/1.5 var(--font-display);
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -783,7 +783,7 @@ body::before {
 .info-links {
   flex: none;
   padding: 12px 8px 0;
-  border-top: 1px solid rgb(43 34 28 / .18);
+  border-top: 2px solid rgb(43 34 28 / .18);
   color: var(--paper-ink);
 }
 .info-links[hidden] { display: none; }
@@ -791,7 +791,19 @@ body::before {
 .info-links ul { list-style: none; margin: 0 0 0 -7px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .info-links-body { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; row-gap: 6px; align-items: center; }
 .info-links-body > :not(.info-extra) { grid-column: 1; }
-.info-extra { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+.info-extra {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 6px;
+  margin-right: -5px;
+  padding-left: 14px;
+  border-left: 2px solid rgb(43 34 28 / .18);
+}
 .press-link {
   display: flex;
   align-items: center;
