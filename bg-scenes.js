@@ -1,98 +1,17 @@
 (() => {
   "use strict";
-  const canvas = document.createElement("canvas");
-  canvas.className = "bg-canvas";
-  canvas.setAttribute("aria-hidden", "true");
-  document.body.prepend(canvas);
-  const ctx = canvas.getContext("2d");
-  const grid = document.createElement("div");
-  grid.className = "bg-grid";
-  grid.setAttribute("aria-hidden", "true");
-  document.body.prepend(grid);
   const stage = document.getElementById("stage");
   const motion = window.Motion;
   let w = 0, h = 0, dpr = 1;
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 3);
     w = window.innerWidth; h = window.innerHeight;
-    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-  let seed = 7;
-  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  const between = (a, b) => a + rand() * (b - a);
-  const blobs = Array.from({ length: 7 }, (_, i) => ({
-    a: (i / 7) * Math.PI * 2, r: between(0.04, 0.16), speed: between(0.03, 0.07) * (i % 2 ? 1 : -1),
-    size: between(0.28, 0.5), alpha: between(0.07, 0.12), hue: between(0, 20)
-  }));
-  function drawFog(t, look) {
-    const m = Math.min(w, h);
-    ctx.globalCompositeOperation = "lighter";
-    for (const b of blobs) {
-      const a = b.a + b.speed * t;
-      const x = w / 2 + Math.cos(a) * b.r * w;
-      const y = h * 0.47 + Math.sin(a * 1.3) * b.r * h * 0.6;
-      const r = b.size * m * (1 + Math.sin(t * 0.2 + b.a) * 0.08);
-      const hue = look.hazeHue + b.hue;
-      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, `hsla(${hue}, 75%, 58%, ${b.alpha})`);
-      g.addColorStop(0.45, `hsla(${hue}, 75%, 48%, ${b.alpha * 0.45})`);
-      g.addColorStop(1, `hsla(${hue}, 75%, 38%, 0)`);
-      ctx.fillStyle = g;
-      ctx.fillRect(x - r, y - r, r * 2, r * 2);
-    }
-    ctx.globalCompositeOperation = "source-over";
-  }
-  const SMOKE = 512;
-  const smokes = new Map();
-  function smokeFor(tint) {
-    const key = tint.join(" ");
-    if (smokes.has(key)) return smokes.get(key);
-    const tex = document.createElement("canvas");
-    tex.width = tex.height = SMOKE;
-    smokes.set(key, null);
-    const noise = new Image();
-    noise.onload = () => {
-      const s = tex.getContext("2d");
-      s.drawImage(noise, 0, 0, SMOKE, SMOKE);
-      s.globalCompositeOperation = "destination-in";
-      const g = s.createRadialGradient(SMOKE / 2, SMOKE / 2, 0, SMOKE / 2, SMOKE / 2, SMOKE / 2);
-      g.addColorStop(0, "rgba(0,0,0,1)");
-      g.addColorStop(0.55, "rgba(0,0,0,.6)");
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      s.fillStyle = g;
-      s.fillRect(0, 0, SMOKE, SMOKE);
-      smokes.set(key, tex);
-      frame(clock);
-    };
-    const [r, gr, b] = tint;
-    noise.src = "data:image/svg+xml;utf8," + encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${SMOKE}" height="${SMOKE}"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".006" numOctaves="5" seed="3"/><feColorMatrix values="0 0 0 0 ${r}  0 0 0 0 ${gr}  0 0 0 0 ${b}  1.9 0 0 0 -.72"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>`);
-    return null;
-  }
-  function drawSmoke(t, look) {
-    const smoke = smokeFor(look.smokeTint);
-    if (!smoke) return;
-    const size = Math.max(w, h) * 0.95;
-    ctx.globalCompositeOperation = "lighter";
-    for (const [dir, alpha, k] of [[1, 0.32, 1], [-1, 0.24, 1.25]]) {
-      ctx.save();
-      ctx.translate(w / 2, h * 0.47);
-      ctx.rotate(dir * t * 0.018 + k);
-      ctx.scale(k, k * 0.8);
-      ctx.globalAlpha = alpha * (0.85 + Math.sin(t * 0.25 + k * 3) * 0.15);
-      ctx.drawImage(smoke, -size / 2, -size / 2, size, size);
-      ctx.restore();
-    }
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = "source-over";
   }
   const NOTCH = ["1,2,2", "2,2,2", "2,2,1", "1,1,2", "2,1,1"];
   const LOGO = {
     notch: NOTCH, glow: [255, 163, 82], bloom: "rgba(255, 196, 140, .18)", opacity: 1,
     ramp: [[0, [97, 48, 5]], [0.26, [166, 81, 7]], [0.4, [249, 119, 6]], [0.55, [255, 163, 82]], [1, [255, 211, 173]], [1.3, [255, 244, 235]]],
-    notchColour: "rgba(30, 15, 6, .96)", reach: 0.8, light: [-0.35, 0.62, -0.4],
-    hazeHue: 252, smokeTint: [0.7, 0.55, 1]
+    notchColour: "rgba(30, 15, 6, .96)", reach: 0.8, light: [-0.35, 0.62, -0.4]
   };
   function rampAt(ramp, k) {
     k = Math.max(0, Math.min(ramp[ramp.length - 1][0], k));
@@ -416,12 +335,8 @@
     }
   }
   function frame(t) {
-    if (!canvas.width || !canvas.height) return;
-    ctx.clearRect(0, 0, w, h);
-    const look = LOGO;
-    drawFog(t, look);
-    drawSmoke(t, look);
-    drawCube(t, look);
+    if (!w || !h) return;
+    drawCube(t, LOGO);
   }
   let raf = 0, clock = 0, last = null;
   function loop(now) {

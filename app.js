@@ -288,7 +288,6 @@
     shelfRow.append(h("li", { class: "shelf-slot" }, btn));
     return btn;
   });
-  const hoverable = window.matchMedia("(hover: hover)");
   const shotLayers = [0, 1].map(() => {
     const layer = h("div", { class: "bg-shot", "aria-hidden": "true" });
     document.body.prepend(layer);
@@ -296,29 +295,24 @@
   });
   let shotFront = 0, shotShown = null;
   function showShot(src) {
-    if (src === shotShown) return;
+    if (!src || src === shotShown) return;
     shotShown = src;
     const [from, to] = [shotLayers[shotFront], shotLayers[1 - shotFront]];
     from.classList.remove("is-on");
-    if (src) {
-      to.style.backgroundImage = `url("${src}")`;
-      to.classList.add("is-on");
-      shotFront = 1 - shotFront;
-    }
-    document.documentElement.classList.toggle("shot-on", !!src);
+    to.style.backgroundImage = `url("${src}")`;
+    to.classList.add("is-on");
+    shotFront = 1 - shotFront;
   }
+  const shotFor = (game) => game.backdrop || (game.screenshots || [])[0];
   GAMES.forEach((game, i) => {
-    const shot = game.backdrop || (game.screenshots || [])[0];
+    const shot = shotFor(game);
     if (!shot) return;
-    const btn = spines[i];
-    const on = () => { if (hoverable.matches && state === "closed") showShot(shot); };
-    const off = () => { if (shotShown === shot) showShot(null); };
-    btn.addEventListener("pointerenter", on);
-    btn.addEventListener("focus", on);
-    btn.addEventListener("pointerleave", off);
-    btn.addEventListener("blur", off);
-    if (hoverable.matches) { const im = new Image(); im.src = shot; }
+    const on = () => { if (state === "closed") showShot(shot); };
+    spines[i].addEventListener("pointerenter", on);
+    spines[i].addEventListener("focus", on);
+    if (matchMedia("(hover: hover)").matches) { const im = new Image(); im.src = shot; }
   });
+  if (GAMES.length) showShot(shotFor(GAMES[0]));
   const stacked = window.matchMedia("(min-width: 701px)");
   const shelfScale = () => (stacked.matches ? 1.25 * 1.2 : 1.25);
   const shelf = $(".shelf");
@@ -526,7 +520,7 @@
   async function openCase(index) {
     if (state !== "closed") return;
     state = "opening";
-    showShot(null);
+    showShot(shotFor(GAMES[index]));
     current = index;
     closeRequested = false;
     const btn = spines[index];
