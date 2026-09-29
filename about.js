@@ -1,13 +1,19 @@
 (() => {
   "use strict";
-  const year = document.getElementById("copyright-year");
-  if (year) year.textContent = String(new Date().getFullYear());
+  for (const year of document.querySelectorAll("#copyright-year, .about-year")) year.textContent = String(new Date().getFullYear());
   const dialog = document.getElementById("about");
   const link = document.getElementById("about-link");
   const body = document.getElementById("about-body");
   if (!dialog || !link || !body) return;
   const site = window.SITE || {};
   const reduceMotion = window.Motion || { matches: false };
+  const wear = window.Wear;
+  if (wear) {
+    const seed = wear.hash("About");
+    dialog.querySelector(".about-cover").style.setProperty("--torn-edge", wear.tornEdge(seed, wear.COVER_WEAR, true));
+    dialog.querySelector(".about-page").style.setProperty("--torn-edge", wear.tornEdge(seed + 1, wear.PAGE_WEAR, true));
+    dialog.style.setProperty("--scuff-about", wear.scuffs(seed + 2, { w: 300, h: 400, count: 12, len: [8, 34], width: [0.4, 0.8], opacity: [0.1, 0.2], smudges: 2, color: "#5a4634" }));
+  }
   const ICONS = {
     instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/>',
     x: '<path fill="currentColor" transform="translate(2.4 2.6) scale(.8)" d="M23.95 4.57a10 10 0 0 1-2.82.77 4.96 4.96 0 0 0 2.16-2.72c-.95.56-2 .96-3.13 1.18a4.92 4.92 0 0 0-8.38 4.49A13.94 13.94 0 0 1 1.64 3.16a4.82 4.82 0 0 0-.67 2.48c0 1.71.87 3.21 2.19 4.1a4.9 4.9 0 0 1-2.23-.62v.06a4.92 4.92 0 0 0 3.95 4.83 5 5 0 0 1-2.21.08 4.94 4.94 0 0 0 4.6 3.42A9.87 9.87 0 0 1 0 19.54a14 14 0 0 0 7.56 2.21c9.05 0 14-7.5 14-13.98l-.01-.64A9.94 9.94 0 0 0 24 4.59z"/>',

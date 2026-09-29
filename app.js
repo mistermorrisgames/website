@@ -173,7 +173,7 @@
   }
   const COVER_WEAR = { margin: 4, worn: 0.2, amp: 2.7, freq: 0.09, tears: [0, 1], tearHalf: [2.9, 2.2], tearDepth: [3.2, 3.7], rubChance: 0.5, rubSize: [2.6, 3] };
   const PAGE_WEAR = { margin: 4, worn: 0.2, amp: 1.55, freq: 0.14, tears: [0, 1], tearHalf: [1.7, 2.1], tearDepth: [1.3, 2.1], rubChance: 0.35, rubSize: [1.7, 2.6] };
-  function tornEdge(seed, wear) {
+  function tornEdge(seed, wear, mirrored = false) {
     const rand = rng(seed);
     const between = ([min, range]) => min + rand() * range;
     const W = 300, H = 400, M = wear.margin, STEP = 1.5, RAMP = 10;
@@ -235,7 +235,7 @@
     const d = "M" + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join("L") + "Z";
     const svg =
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">` +
-      `<path fill="#fff" d="${d}"/></svg>`;
+      `<path fill="#fff" d="${d}"${mirrored ? ` transform="translate(${W} 0) scale(-1 1)"` : ""}/></svg>`;
     return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
   }
   function scuffs(seed, { w = 300, h = 486, count = 12, len = [6, 30], width = [0.5, 1], opacity = [0.08, 0.2], smudges = 0, color = "#fff" } = {}) {
@@ -258,6 +258,7 @@
       `<filter id="b"><feGaussianBlur stdDeviation="${(w * 0.03).toFixed(1)}"/></filter>${marks}</svg>`;
     return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
   }
+  window.Wear = { hash, tornEdge, scuffs, COVER_WEAR, PAGE_WEAR };
   const spineScuffs = (game) =>
     scuffs(hash(game.title) + 14, { w: 33, h: 402, count: 5, len: [5, 22], opacity: [0.1, 0.22] });
   const preloaded = new Set();
