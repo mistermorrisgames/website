@@ -47,18 +47,21 @@
     </footer>
   </main>
   <dialog class="about" id="about" aria-labelledby="about-title">
+    <button type="button" class="about-close" id="about-close">
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="visually-hidden">Close</span>
+    </button>
     <div class="about-book">
+      <div class="about-page is-deep" aria-hidden="true"></div>
       <div class="about-page" aria-hidden="true"></div>
       <div class="about-cover" aria-hidden="true"></div>
-      <button type="button" class="about-close" id="about-close">
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <span class="visually-hidden">Close</span>
-      </button>
-      <img class="about-wordmark" src="images/wordmark.svg" alt="" width="485" height="26">
-      <h2 class="about-title" id="about-title">About</h2>
-      <p class="about-heading" id="about-heading"></p>
-      <div class="about-body" id="about-body"></div>
-      <p class="about-print"><span class="about-print-mark" aria-hidden="true"></span><span>&copy; <span class="about-year">2026</span> Mister Morris Games. All rights reserved.</span></p>
+      <div class="about-content">
+        <img class="about-wordmark" src="images/wordmark-white.svg" alt="" width="485" height="26">
+        <h2 class="about-title" id="about-title">About</h2>
+        <p class="about-heading" id="about-heading"></p>
+        <div class="about-body" id="about-body"></div>
+        <p class="about-print"><span class="about-print-mark" aria-hidden="true"></span><span>&copy; <span class="about-year">2026</span> Mister Morris Games. All rights reserved.</span></p>
+      </div>
     </div>
   </dialog>
   <div class="stage" id="stage" hidden>
