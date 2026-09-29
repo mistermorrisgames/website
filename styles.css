@@ -59,10 +59,14 @@ body::before {
 .studio-name { margin: 0; line-height: 0; }
 .wordmark {
   display: block;
-  width: min(440px, calc(100vw - 48px));
+  width: min(560px, calc(100vw - 48px));
   height: auto;
   margin: 0 auto;
+  filter: drop-shadow(0 6px 14px rgb(0 0 0 / .45));
+  animation: wordmark-in 700ms var(--spring) 120ms both;
 }
+.wordmark.is-stacked { width: 250px; }
+@keyframes wordmark-in { from { opacity: 0; transform: translateY(-10px) scale(.94); } }
 .shelf {
   display: flex;
   flex-direction: column;
@@ -907,7 +911,7 @@ body::before {
 }
 @media (max-width: 700px) {
   .room { gap: 28px; padding: 54px 16px 52px; }
-  .wordmark { width: 172px; }
+  .wordmark.is-stacked { width: 172px; }
 }
 .bg-shot {
   position: fixed;
@@ -931,10 +935,6 @@ body {
   background-image: radial-gradient(ellipse 120% 90% at 50% 50%, transparent 45%, rgb(0 0 0 / .6));
 }
 body::before { opacity: .15; z-index: 0; }
-.studio-name { position: relative; z-index: 0; height: 110px; display: grid; place-items: center; cursor: pointer; }
-.logo-canvas { position: absolute; z-index: -1; pointer-events: none; }
-.wordmark { opacity: 0; }
-@media (max-width: 700px) { .studio-name { height: 96px; } }
 .manual-wrap.is-openable { cursor: pointer; }
 .manual-wrap.is-openable > * { transition: transform 200ms ease; }
 .manual-wrap.is-openable:hover > * { transform: translateY(-4px); transition: transform 320ms var(--spring); }
