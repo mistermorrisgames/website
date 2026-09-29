@@ -1139,7 +1139,7 @@ body::before { opacity: .15; z-index: 0; }
 .about-link:hover { color: var(--ui-ink); }
 .about-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .about {
-  --about-cover: #17132a;
+  --about-cover: #0d0a18;
   --about-ink: #f2e8d5;
   --about-muted: rgb(242 232 213 / .62);
   width: min(420px, calc(100vw - 32px));
@@ -1172,12 +1172,10 @@ body::before { opacity: .15; z-index: 0; }
   mask: var(--torn-edge) 0 0 / 100% 100% no-repeat;
 }
 .about-page {
-  inset: 0 0 -1.5px -3px;
   background: var(--grain-paper), var(--paper);
   box-shadow: inset 0 0 6px rgb(120 90 50 / .35), inset 0 0 0 1px rgb(120 90 50 / .25);
 }
 .about-page.is-deep {
-  inset: 2px 0 -3px -5.5px;
   background: linear-gradient(rgb(60 40 20 / .16), rgb(60 40 20 / .16)), var(--grain-paper), color-mix(in srgb, var(--paper) 92%, #8a6a40);
 }
 .about-cover {
@@ -1185,7 +1183,7 @@ body::before { opacity: .15; z-index: 0; }
     linear-gradient(270deg, rgb(0 0 0 / .45), rgb(0 0 0 / .12) 6px, transparent 14px),
     var(--scuff-about, none),
     var(--grain-dark),
-    radial-gradient(ellipse 90% 70% at 40% 25%, rgb(120 100 190 / .12), transparent 70%),
+    radial-gradient(ellipse 90% 70% at 40% 25%, rgb(120 100 190 / .06), transparent 70%),
     var(--about-cover);
   box-shadow:
     inset 0 1.5px 0 rgb(242 232 213 / .22),
@@ -1226,7 +1224,6 @@ body::before { opacity: .15; z-index: 0; }
 }
 .about-close:hover { background: rgb(241 228 207 / .12); border-color: rgb(241 228 207 / .5); }
 .about-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.about-wordmark { display: block; width: min(280px, 100%); height: auto; margin: 22px auto 26px; }
 .about-title {
   margin: 0 0 18px;
   font: var(--title-weight, 800) 24px/1.15 var(--font-title);
