@@ -1199,19 +1199,6 @@ body::before { opacity: .15; z-index: 0; }
     inset 5px 0 6px -4px rgb(242 232 213 / .14),
     inset 0 -5px 6px -4px rgb(242 232 213 / .14);
 }
-.about-cover::before,
-.about-cover::after {
-  content: "";
-  position: absolute;
-  right: 7px;
-  top: 22%;
-  width: 3px;
-  height: 30px;
-  border-radius: 1px;
-  background: linear-gradient(90deg, #6d6a64, #d9d6cf 45%, #8e8b85);
-  box-shadow: 0 1px 1px rgb(0 0 0 / .5);
-}
-.about-cover::after { top: auto; bottom: 22%; }
 .about-close {
   position: absolute;
   top: 0;
