@@ -31,7 +31,10 @@
   <main class="room" id="room">
     <header class="masthead">
       <h1 class="studio-name">
-        <img class="wordmark" id="studio-name" src="images/wordmark-white.svg" alt="Mister Morris Games" width="485" height="26">
+        <picture>
+          <source media="(max-width: 700px)" srcset="images/wordmark-stacked-white.svg" width="164" height="83">
+          <img class="wordmark" id="studio-name" src="images/wordmark-white.svg" alt="Mister Morris Games" width="485" height="26">
+        </picture>
       </h1>
     </header>
     <section class="shelf" aria-label="Games">
@@ -101,6 +104,5 @@
   <script src="cartridge.js"></script>
   <script src="app.js"></script>
   <script src="about.js"></script>
-  <script src="logo-toggle.js"></script>
 </body>
 </html>
