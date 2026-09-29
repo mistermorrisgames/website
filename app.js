@@ -93,12 +93,14 @@
   }
   const paragraphs = (text) =>
     String(text || "").split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean).map((t) => h("p", {}, t));
-  let logoMarkup = null;
+  const logoMarkup = new Map();
   function inlineLogo(text) {
     const svg = new DOMParser().parseFromString(text, "image/svg+xml").documentElement;
     const box = svg.getAttribute("viewBox");
-    const shapes = [...svg.querySelectorAll("path, polygon, rect, circle, ellipse")]
-      .filter((el) => el.closest("mask") && el.getAttribute("fill") && el.getAttribute("fill") !== "none");
+    const all = [...svg.querySelectorAll("path, polygon, rect, circle, ellipse")]
+      .filter((el) => el.getAttribute("fill") && el.getAttribute("fill") !== "none");
+    const masked = all.filter((el) => el.closest("mask"));
+    const shapes = masked.length ? masked : all;
     if (!box || !shapes.length) return null;
     const light = (c) => {
       const m = /^#([0-9a-f]{6})$/i.exec(c.trim());
@@ -116,21 +118,25 @@
     });
     return `<svg viewBox="${box}" aria-hidden="true">${parts.join("")}</svg>`;
   }
-  const useInlineLogo = (el) => { el.innerHTML = logoMarkup; el.classList.add("is-inline"); };
-  if (SITE.logo) {
-    fetch(SITE.logo).then((r) => r.text()).then((text) => {
-      logoMarkup = inlineLogo(text);
-      if (logoMarkup) document.querySelectorAll(".studio-logo--image").forEach(useInlineLogo);
+  const useInlineLogo = (el, file) => { el.innerHTML = logoMarkup.get(file); el.classList.add("is-inline"); };
+  for (const file of new Set([SITE.logo, SITE.spineLogo].filter(Boolean))) {
+    fetch(file).then((r) => r.text()).then((text) => {
+      const markup = inlineLogo(text);
+      if (!markup) return;
+      logoMarkup.set(file, markup);
+      document.querySelectorAll(".studio-logo--image").forEach((el) => { if (el.dataset.file === file) useInlineLogo(el, file); });
     }).catch(() => {});
   }
-  function studioLogo() {
-    if (!SITE.logo) return h("span", { class: "studio-logo studio-logo--text" }, SITE.logoText || "");
+  function studioLogo(file = SITE.logo) {
+    if (!file) return h("span", { class: "studio-logo studio-logo--text" }, SITE.logoText || "");
     const logo = h("span", { class: "studio-logo studio-logo--image" });
-    logo.style.setProperty("--logo", `url("${SITE.logo}")`);
+    logo.dataset.file = file;
+    logo.style.setProperty("--logo", `url("${file}")`);
     if (SITE.logoColor) logo.style.color = SITE.logoColor;
-    if (logoMarkup) useInlineLogo(logo);
+    if (logoMarkup.has(file)) useInlineLogo(logo, file);
     return logo;
   }
+  const spineLogo = SITE.spineLogo || SITE.logo;
   function spineArt(game) {
     const art = game.spine || game.cover;
     const insert = h("span", { class: "spine-insert" },
@@ -140,7 +146,7 @@
     if (art) insert.style.setProperty("--spine-art", `url("${art}")`);
     else if (game.wip) insert.classList.add("is-wip");
     return h("span", { class: "spine-art", "aria-hidden": "true" },
-      h("span", { class: "spine-top" }, h("span", { class: SITE.logo ? "spine-logo spine-logo--image" : "spine-logo" }, studioLogo())),
+      h("span", { class: "spine-top" }, h("span", { class: spineLogo ? "spine-logo spine-logo--image" : "spine-logo" }, studioLogo(spineLogo))),
       insert
     );
   }

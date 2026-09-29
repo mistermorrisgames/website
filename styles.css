@@ -185,7 +185,7 @@ body::before {
   color: var(--case-color);
 }
 .spine-logo { width: 22px; height: 22px; }
-.spine-logo--image { position: relative; width: 20px; height: 20px; border-radius: 0; background: none; color: var(--case-ink); }
+.spine-logo--image { position: relative; width: 24px; height: 24px; border-radius: 0; background: none; color: var(--case-ink); }
 .spine-logo--image > .studio-logo--image { position: absolute; inset: 0; width: auto; height: auto; }
 .spine-top {
   flex: none;
@@ -893,7 +893,8 @@ body::before {
   }
   .shelf-row::before { left: 36px; right: 36px; height: 100%; }
   .shelf-row::after { left: 44px; right: 44px; }
-  .spine-art .platform-icon { transform: rotate(90deg); }
+  .spine-art .platform-icon,
+  .spine-art .spine-logo--image { transform: rotate(90deg); }
   .spine-art .platform-icon[data-platform="switch"],
   .spine-art .platform-icon[data-platform="mobile"] { transform: rotate(90deg) scale(.86); }
   .spine-art::after {

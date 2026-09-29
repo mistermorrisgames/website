@@ -1,6 +1,7 @@
 window.SITE = {
   name: "Mister Morris Games",
   logo: "images/logo.svg",
+  spineLogo: "images/logo-m.svg",
   logoText: "MM",
   caseColor: "#141414",
   caseInk: "#ffffff",
