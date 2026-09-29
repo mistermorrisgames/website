@@ -414,11 +414,18 @@
     }
     const linksEl = $("#info-links");
     linksEl.hidden = !platforms.length && !game.presskit && !game.trailer;
-    const extra = (url, text, label) => url && h("a", {
-      class: "press-link", href: url, target: "_blank", rel: "noopener", "aria-label": `${label} (opens in a new tab)`
-    }, text, arrowIcon());
-    const press = extra(game.presskit, "Press kit", `Press kit for ${game.title}`);
-    const trailer = extra(game.trailer, "YouTube", `Watch the ${game.title} trailer on YouTube`);
+    const PRESS_ICON = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M1.75 4.25v8.5c0 .55.45 1 1 1h10.5c.55 0 1-.45 1-1V6.25c0-.55-.45-1-1-1H8L6.5 3.25H2.75c-.55 0-1 .45-1 1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+    const PLAY_ICON = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="1" y="3" width="14" height="10" rx="3" fill="currentColor"/><path d="M6.5 5.75v4.5L10.5 8z" fill="var(--insert, #f2e8d5)"/></svg>';
+    const extra = (url, text, label, icon) => {
+      if (!url) return null;
+      const glyph = h("span", { class: "press-icon" });
+      glyph.innerHTML = icon;
+      return h("a", {
+        class: "press-link", href: url, target: "_blank", rel: "noopener", "aria-label": `${label} (opens in a new tab)`
+      }, glyph, text, arrowIcon());
+    };
+    const press = extra(game.presskit, "Press kit", `Press kit for ${game.title}`, PRESS_ICON);
+    const trailer = extra(game.trailer, "YouTube", `Watch the ${game.title} trailer on YouTube`, PLAY_ICON);
     linksEl.replaceChildren(h("div", { class: "info-links-body" },
       h("h3", { class: "info-heading", id: "info-links-title" }, game.wip ? "Coming to" : "Available on"),
       (press || trailer) && h("div", { class: "info-extra" }, press, trailer),
