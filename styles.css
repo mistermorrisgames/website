@@ -186,6 +186,7 @@ body::before {
 }
 .spine-logo { width: 22px; height: 22px; }
 .spine-logo--image { position: relative; width: 17px; height: 17px; border-radius: 0; background: none; color: var(--case-ink); }
+.spine-logo--image > .studio-logo--image { opacity: .78; filter: drop-shadow(0 1px 1px rgb(0 0 0 / .9)); }
 .spine-logo--image > .studio-logo--image { position: absolute; inset: 0; width: auto; height: auto; }
 .spine-top {
   flex: none;
@@ -1151,7 +1152,14 @@ body::before { opacity: .15; z-index: 0; }
   text-align: center;
   color: var(--about-ink);
 }
-.about::backdrop { background: rgb(8 5 3 / .72); }
+.about::backdrop {
+  background: radial-gradient(ellipse 75% 65% at 50% 45%, rgb(30 20 14 / .62), rgb(8 5 3 / .92));
+  animation: about-backdrop-in 420ms ease both;
+}
+.about.is-closing::backdrop { animation: about-backdrop-out 180ms ease-in both; }
+@keyframes about-backdrop-in { from { opacity: 0; } }
+@keyframes about-backdrop-out { to { opacity: 0; } }
+.motion-off .about::backdrop { animation: none; }
 .about-book {
   position: relative;
   z-index: 0;
@@ -1172,16 +1180,13 @@ body::before { opacity: .15; z-index: 0; }
   mask: var(--torn-edge) 0 0 / 100% 100% no-repeat;
 }
 .about-page {
-  background: var(--grain-paper), var(--paper);
-  box-shadow: inset 0 0 6px rgb(120 90 50 / .35), inset 0 0 0 1px rgb(120 90 50 / .25);
+  background: var(--grain-paper), color-mix(in srgb, var(--paper) 42%, var(--about-cover));
+  box-shadow: inset 0 0 6px rgb(0 0 0 / .35);
 }
-.about-page.is-deep {
-  background: linear-gradient(rgb(60 40 20 / .16), rgb(60 40 20 / .16)), var(--grain-paper), color-mix(in srgb, var(--paper) 92%, #8a6a40);
-}
+.about-page.is-deep { background: var(--grain-paper), color-mix(in srgb, var(--paper) 30%, var(--about-cover)); }
 .about-cover {
   background:
-    linear-gradient(270deg, rgb(0 0 0 / .45), rgb(0 0 0 / .12) 6px, transparent 14px),
-    var(--scuff-about, none),
+    linear-gradient(270deg, rgb(0 0 0 / .45), rgb(0 0 0 / .12) 10px, transparent 18px),
     var(--grain-dark),
     radial-gradient(ellipse 90% 70% at 40% 25%, rgb(120 100 190 / .06), transparent 70%),
     var(--about-cover);
@@ -1189,6 +1194,7 @@ body::before { opacity: .15; z-index: 0; }
     inset 0 1.5px 0 rgb(242 232 213 / .22),
     inset 1.5px 0 0 rgb(242 232 213 / .22),
     inset 0 -1.5px 0 rgb(242 232 213 / .22),
+    inset -1.5px 0 0 rgb(242 232 213 / .12),
     inset 0 5px 6px -4px rgb(242 232 213 / .14),
     inset 5px 0 6px -4px rgb(242 232 213 / .14),
     inset 0 -5px 6px -4px rgb(242 232 213 / .14);
@@ -1197,7 +1203,7 @@ body::before { opacity: .15; z-index: 0; }
 .about-cover::after {
   content: "";
   position: absolute;
-  right: 3px;
+  right: 7px;
   top: 22%;
   width: 3px;
   height: 30px;

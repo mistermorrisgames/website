@@ -10,10 +10,9 @@
   const wear = window.Wear;
   if (wear) {
     const seed = wear.hash("About");
-    dialog.querySelector(".about-cover").style.setProperty("--torn-edge", wear.tornEdge(seed, wear.COVER_WEAR, true));
+    dialog.querySelector(".about-cover").style.setProperty("--torn-edge", wear.tornEdge(seed, { ...wear.COVER_WEAR, binding: true }, true));
     dialog.querySelectorAll(".about-page").forEach((page, i) =>
-      page.style.setProperty("--torn-edge", wear.tornEdge(seed + 1 + i, wear.PAGE_WEAR, true)));
-    dialog.style.setProperty("--scuff-about", wear.scuffs(seed + 5, { w: 300, h: 400, count: 12, len: [8, 34], width: [0.4, 0.8], opacity: [0.08, 0.18], smudges: 2 }));
+      page.style.setProperty("--torn-edge", wear.tornEdge(seed + 1 + i, { ...wear.PAGE_WEAR, binding: true }, true)));
   }
   const ICONS = {
     instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/>',
@@ -57,6 +56,7 @@
   function open() {
     if (dialog.open) return;
     closing = false;
+    dialog.classList.remove("is-closing");
     dialog.showModal();
     if (!reduceMotion.matches) {
       dialog.animate([{ opacity: 0, transform: "translateY(18px) scale(.97)" }, { opacity: 1, transform: "none" }],
@@ -66,6 +66,7 @@
   async function close() {
     if (!dialog.open || closing) return;
     closing = true;
+    dialog.classList.add("is-closing");
     if (!reduceMotion.matches) {
       await dialog.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "translateY(10px) scale(.98)" }],
         { duration: 180, easing: "ease-in", fill: "forwards" }).finished;

@@ -178,7 +178,8 @@
     const between = ([min, range]) => min + rand() * range;
     const W = 300, H = 400, M = wear.margin, STEP = 1.5, RAMP = 10;
     const smooth = (t) => t * t * (3 - 2 * t);
-    const corners = [[-10, M], [W - M, M], [W - M, H - M], [-10, H - M]];
+    const B = wear.binding ? M : -10;
+    const corners = [[B, M], [W - M, M], [W - M, H - M], [B, H - M]];
     const inward = [[0, 1], [-1, 0], [0, -1], [1, 0]];
     const edges = [0, 1, 2, 3].map((i) => {
       const [x1, y1] = corners[i];
@@ -206,10 +207,11 @@
     const zones = tears.map((t) => [t.edge, t.at - t.half - 12, t.at + t.half + 12]);
     if (rubbed[1]) zones.push([0, edges[0].len - 22, edges[0].len + RAMP], [1, -RAMP, 22]);
     if (rubbed[2]) zones.push([1, edges[1].len - 22, edges[1].len + RAMP], [2, -RAMP, 22]);
-    const openLength = edges[0].len + edges[1].len + edges[2].len;
+    const worn = wear.binding ? 4 : 3;
+    const openLength = edges.slice(0, worn).reduce((sum, e) => sum + e.len, 0);
     let covered = zones.reduce((sum, [, a, b]) => sum + (b - a), 0);
     while (covered < wear.worn * openLength) {
-      const edge = Math.floor(rand() * 3), size = 30 + rand() * 45;
+      const edge = Math.floor(rand() * worn), size = 30 + rand() * 45;
       const from = rand() * (edges[edge].len - size);
       zones.push([edge, from, from + size]);
       covered += size;
@@ -224,7 +226,7 @@
       const noise = noiseFor(e.len);
       const start = rubbed[i], end = e.len - rubbed[(i + 1) % 4];
       for (let s = start; ; s = Math.min(s + STEP, end)) {
-        let bite = i < 3 ? wornAt(i, s) * wear.amp * noise(s) : 0;
+        let bite = i < worn ? wornAt(i, s) * wear.amp * noise(s) : 0;
         for (const t of tears) {
           if (t.edge === i && Math.abs(s - t.at) < t.half) bite += t.depth * (1 - Math.abs(s - t.at) / t.half);
         }
