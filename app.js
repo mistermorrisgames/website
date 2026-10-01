@@ -401,7 +401,7 @@
       meta && h("p", { class: "info-meta" }, meta),
       h("div", { id: "case-desc" }, paragraphs(game.description)),
       game.commentary && h("section", { class: "info-notes" },
-        h("h3", { class: "info-heading" }, "Developer's notes"),
+        h("h3", { class: "info-heading" }, "Note:"),
         paragraphs(game.commentary)),
     );
     card.scrollTop = 0;
