@@ -321,7 +321,10 @@
     spines[i].addEventListener("focus", on);
     if (matchMedia("(hover: hover)").matches) { const im = new Image(); im.src = shot; }
   });
-  if (GAMES.length) showShot(shotFor(GAMES[0]));
+  const slugFor = (game) => game.slug || game.title.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const flags = new URLSearchParams(location.search);
+  const linked = GAMES.findIndex((g) => flags.has(slugFor(g)));
+  if (GAMES.length) showShot(shotFor(GAMES[Math.max(linked, 0)]));
   const stacked = window.matchMedia("(min-width: 701px)");
   const shelfScale = () => (stacked.matches ? 1.25 * 1.2 : 1.25);
   const shelf = $(".shelf");
@@ -533,13 +536,10 @@
   let state = "closed";
   let current = -1;
   let closeRequested = false;
-  const slugFor = (game) => game.slug || game.title.toLowerCase().replace(/[^a-z0-9]+/g, "");
   function showAddress(game) {
     document.title = game ? `${game.title} · ${SITE.name}` : SITE.name;
     try { history.replaceState(null, "", location.pathname + (game ? "?" + slugFor(game) : "")); } catch {   }
   }
-  const flags = new URLSearchParams(location.search);
-  const linked = GAMES.findIndex((g) => flags.has(slugFor(g)));
   if (linked >= 0) window.addEventListener("load", () => setTimeout(() => openCase(linked), 350));
   async function openCase(index) {
     if (state !== "closed") return;
