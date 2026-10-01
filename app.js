@@ -515,7 +515,8 @@
   function play(el, keyframes, duration, easing = "linear") {
     const anim = el.animate(keyframes, { duration, easing, fill: "forwards" });
     return anim.finished.then(() => {
-      try { anim.commitStyles(); } catch {   }
+      const { offset, easing: _, composite, ...end } = keyframes[keyframes.length - 1];
+      Object.assign(el.style, end);
       anim.cancel();
     });
   }
