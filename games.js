@@ -8,7 +8,7 @@ window.SITE = {
   aboutHeading: "Hi, I’m Jordan Morris",
   about: `And I’m the creator behind Rusty's Retirement and Haiku the Robot.
 
-Ever since I was a kid, I loved playing games with an open-world, I love that feeling of exploring a world on your own terms and creating your own proper adventure.`,
+Ever since I was a kid, I loved playing games with an open-world. I love that feeling of exploring a world on your own terms and creating your own proper adventure.`,
   aboutLinks: [
     { label: "Instagram", url: "https://instagram.com/mister.morris.games/" },
     { label: "X (Twitter)", url: "https://twitter.com/MrMorrisGames" },
@@ -28,9 +28,9 @@ window.GAMES = [
     spine: "images/artwork/haiku-spine.webp",
     released: "April 2022",
     genre: "Metroidvania",
-    description: `A cute adventure-exploration game set in a vast interconnected world full of corrupt robots and machinery. Explore the dying land of Arcadia; fight fierce machines; befriend quirky robots, and seek answers to the mysteries of the world around you.
-
-Forge your own path: dodge, dash and slash through fierce machines and epic boss fights, befriend quirky robots, and unlock powerful abilities to reach places that were out of reach before.`,
+    description: `A cute adventure-exploration game set in a vast interconnected world full of corrupt robots and machinery.
+    
+Explore the dying land of Arcadia; fight fierce machines; befriend quirky robots, and seek answers to the mysteries of the world around you.`,
     commentary: `Haiku marked the start of my game development journey, and it was only possible thanks to all the wonderful Kickstarter supporters. Without their support, this game and all my other games wouldn't exist!`,
     presskit: "https://drive.google.com/drive/u/0/folders/1ezltd_qjyBD2ajX8tuzePqtYTBOtpyQd",
     trailer: "https://www.youtube.com/watch?v=j2DWMQ_USxg",

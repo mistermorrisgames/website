@@ -755,7 +755,12 @@ body::before {
   color: var(--paper-ink);
   scrollbar-width: thin;
   scrollbar-color: rgb(43 34 28 / .4) transparent;
+  display: flex;
+  flex-direction: column;
 }
+.info-card > * { flex: none; }
+.info-card > #case-desc > :last-child { margin-bottom: 0; }
+.info-card > .info-notes { margin-top: auto; }
 .info-card:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .info-title {
   margin: 0;
