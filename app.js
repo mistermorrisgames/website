@@ -533,9 +533,18 @@
   let state = "closed";
   let current = -1;
   let closeRequested = false;
+  const slugFor = (game) => game.slug || game.title.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  function showAddress(game) {
+    document.title = game ? `${game.title} · ${SITE.name}` : SITE.name;
+    try { history.replaceState(null, "", location.pathname + (game ? "?" + slugFor(game) : "")); } catch {   }
+  }
+  const flags = new URLSearchParams(location.search);
+  const linked = GAMES.findIndex((g) => flags.has(slugFor(g)));
+  if (linked >= 0) window.addEventListener("load", () => setTimeout(() => openCase(linked), 350));
   async function openCase(index) {
     if (state !== "closed") return;
     state = "opening";
+    showAddress(GAMES[index]);
     showShot(shotFor(GAMES[index]));
     current = index;
     closeRequested = false;
@@ -621,6 +630,7 @@
     btn.focus({ preventScroll: true });
     requestAnimationFrame(() => btn.classList.remove("is-lifted"));
     state = "closed";
+    showAddress(null);
   }
   closeBtn.addEventListener("click", closeCase);
   const manualWrap = $("#manual-wrap");
