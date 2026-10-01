@@ -183,9 +183,18 @@ body::before {
   color: var(--case-color);
 }
 .spine-logo { width: 22px; height: 22px; }
-.spine-logo--image { position: relative; width: 17px; height: 17px; border-radius: 0; background: none; color: var(--case-ink); }
+.spine-logo--image {
+  position: relative;
+  width: 17px;
+  height: auto;
+  aspect-ratio: 28.4 / 19.5;
+  border-radius: 0;
+  background: none;
+  color: var(--case-ink);
+}
 .spine-logo--image > .studio-logo--image { opacity: .78; filter: drop-shadow(0 1px 1px rgb(0 0 0 / .9)); }
-.spine-logo--image > .studio-logo--image { position: absolute; inset: 0; width: auto; height: auto; }
+.spine-logo--image > .studio-logo--image { position: absolute; inset: 0; width: 100%; height: 100%; }
+.spine-logo--image svg { position: absolute; inset: 0; }
 .spine-top {
   flex: none;
   aspect-ratio: 3 / 4;
