@@ -63,9 +63,7 @@ body::before {
   height: auto;
   margin: 0 auto;
   filter: drop-shadow(0 3px 2px rgb(0 0 0 / .45)) drop-shadow(0 8px 18px rgb(0 0 0 / .4));
-  animation: wordmark-in 700ms var(--spring) 120ms both;
 }
-@keyframes wordmark-in { from { opacity: 0; transform: translateY(-10px) scale(.94); } }
 .shelf {
   display: flex;
   flex-direction: column;
@@ -1093,11 +1091,11 @@ body::before { opacity: .15; z-index: 0; }
   gap: 9%;
 }
 .cart-back-logo {
-  width: 40%;
-  aspect-ratio: 54 / 62;
+  width: 48%;
+  aspect-ratio: 28.4 / 19.5;
   background: rgb(255 255 255 / .28);
-  -webkit-mask: url("images/logo.svg") center / contain no-repeat;
-  mask: url("images/logo.svg") center / contain no-repeat;
+  -webkit-mask: url("images/logo-m.svg") center / contain no-repeat;
+  mask: url("images/logo-m.svg") center / contain no-repeat;
   filter: drop-shadow(0 -1px 0 rgb(255 255 255 / .12)) drop-shadow(0 1px 0 rgb(0 0 0 / .6));
 }
 .cart-back-code {
