@@ -119,7 +119,9 @@
     return `<svg viewBox="${box}" aria-hidden="true">${parts.join("")}</svg>`;
   }
   const useInlineLogo = (el, file) => { el.innerHTML = logoMarkup.get(file); el.classList.add("is-inline"); };
-  for (const file of new Set([SITE.logo, SITE.spineLogo].filter(Boolean))) {
+  const spineLogo = SITE.spineLogo || SITE.logo;
+  if (spineLogo) {
+    const file = spineLogo;
     fetch(file).then((r) => r.text()).then((text) => {
       const markup = inlineLogo(text);
       if (!markup) return;
@@ -136,7 +138,6 @@
     if (logoMarkup.has(file)) useInlineLogo(logo, file);
     return logo;
   }
-  const spineLogo = SITE.spineLogo || SITE.logo;
   function spineArt(game) {
     const art = game.spine || game.cover;
     const insert = h("span", { class: "spine-insert" },
@@ -319,7 +320,9 @@
     const on = () => { if (state === "closed") showShot(shot); };
     spines[i].addEventListener("pointerenter", on);
     spines[i].addEventListener("focus", on);
-    if (matchMedia("(hover: hover)").matches) { const im = new Image(); im.src = shot; }
+    if (matchMedia("(hover: hover)").matches) {
+      window.addEventListener("load", () => { const im = new Image(); im.src = shot; });
+    }
   });
   const slugFor = (game) => game.slug || game.title.toLowerCase().replace(/[^a-z0-9]+/g, "");
   const flags = new URLSearchParams(location.search);
@@ -342,6 +345,7 @@
     shelf.style.setProperty("--shelf-extra", `${Math.round((scale - 1) * r.height)}px`);
   }
   fitShelf();
+  room.classList.add("is-ready");
   window.addEventListener("resize", fitShelf);
   if (document.fonts) document.fonts.ready.then(fitShelf);
   const arrowIcon = () => {
