@@ -848,6 +848,7 @@ body::before {
 .store-link:is(a):hover { color: var(--game-color); background-color: rgb(43 34 28 / .06); }
 .store-link:is(a):active { background-color: rgb(43 34 28 / .12); }
 .store-link:focus-visible { outline: 2px solid var(--paper-ink); outline-offset: 1px; }
+.store-link.is-plain { cursor: default; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 .stage, .stage * { touch-action: none; }
 .pager {
   position: absolute;

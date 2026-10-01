@@ -406,7 +406,7 @@
     );
     card.scrollTop = 0;
     const platforms = game.platforms || [];
-    const linkFor = (p) => links.find((l) => linkPlatform(l) === p);
+    const linkFor = (p) => links.find((l) => linkPlatform(l) === p && l.url && l.url !== "#");
     for (const l of links) {
       if (!platforms.includes(linkPlatform(l))) {
         console.warn(`"${game.title}": the link "${l.label}" doesn't match any of its platforms, so it isn't shown.`);
@@ -433,15 +433,14 @@
         platforms.map((p) => {
           const l = linkFor(p);
           if (!l) {
-            return h("li", {}, h("span", { class: "store-link", role: "img", "aria-label": platformName(p), title: platformName(p) }, platformIcon(p)));
+            return h("li", {}, h("span", { class: "store-link is-plain", role: "img", "aria-label": platformName(p) }, platformIcon(p)));
           }
-          const external = l.url && l.url !== "#";
           return h("li", {},
             h("a", {
               class: "store-link",
-              href: l.url || "#",
-              target: external ? "_blank" : null,
-              rel: external ? "noopener" : null,
+              href: l.url,
+              target: "_blank",
+              rel: "noopener",
               "aria-label": l.label,
               title: l.label
             }, platformIcon(p)));
