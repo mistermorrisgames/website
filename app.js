@@ -277,6 +277,19 @@
   window.addEventListener("load", () => {
     const later = window.requestIdleCallback || ((fn) => setTimeout(fn, 1500));
     later(() => GAMES.forEach(preloadArt));
+    const idle = window.requestIdleCallback ? (fn) => requestIdleCallback(fn, { timeout: 4000 }) : (fn) => setTimeout(fn, 400);
+    const queue = GAMES.slice();
+    if (linked > 0) queue.unshift(...queue.splice(linked, 1));
+    const next = () => {
+      const game = queue.shift();
+      if (!game) return;
+      warm(game);
+      idle(next);
+    };
+    idle(() => {
+      if (document.fonts && document.fonts.load) document.fonts.load('italic 15px "Noto Sans"').catch(() => {});
+      next();
+    });
   });
   if (SITE.name) {
     $("#studio-name").alt = SITE.name;
@@ -293,7 +306,7 @@
     btn.style.setProperty("--scuff-spine", spineScuffs(game));
     btn.addEventListener("click", () => openCase(i));
     for (const type of ["pointerenter", "focus", "touchstart"]) {
-      btn.addEventListener(type, () => preloadArt(game), { passive: true });
+      btn.addEventListener(type, () => { preloadArt(game); if (type !== "touchstart") warm(game); }, { passive: true });
     }
     shelfRow.append(h("li", { class: "shelf-slot" }, btn));
     return btn;
@@ -353,37 +366,75 @@
     span.innerHTML = '<svg viewBox="0 0 10 10" width="8" height="8"><path d="M2.5 7.5l5-5M3.5 2.5h4v4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     return span;
   };
-  function fillCase(game) {
-    paint(stage, game);
-    const wearSeed = hash(game.title);
-    stage.style.setProperty("--scuff-front", scuffs(wearSeed + 11, { count: 16, opacity: [0.07, 0.2], smudges: 3 }));
-    stage.style.setProperty("--scuff-left", scuffs(wearSeed + 12, { count: 10, opacity: [0.08, 0.18], smudges: 2, color: "#5a4634" }));
-    stage.style.setProperty("--scuff-right", scuffs(wearSeed + 13, { count: 10, opacity: [0.08, 0.18], smudges: 2, color: "#5a4634" }));
-    stage.style.setProperty("--scuff-cart", scuffs(wearSeed + 15, { w: 100, h: 115, count: 8, len: [4, 18], opacity: [0.1, 0.26] }));
-    stage.style.setProperty("--scuff-cart-back", scuffs(wearSeed + 18, { w: 100, h: 115, count: 8, len: [4, 18], opacity: [0.1, 0.26] }));
-    const lw = rng(wearSeed + 17);
+  const skins = new Map();
+  function skinFor(game) {
+    let skin = skins.get(game);
+    if (skin) return skin;
+    const seed = hash(game.title);
+    const lw = rng(seed + 17);
     const corner = ["100% 0%", "100% 100%", "0% 100%"][Math.floor(lw() * 3)];
     const edge = ["0deg", "90deg", "180deg", "270deg"][Math.floor(lw() * 4)];
-    stage.style.setProperty("--label-rub", `radial-gradient(circle at ${corner}, rgb(242 232 213 / ${(0.18 + lw() * 0.2).toFixed(2)}), transparent ${Math.round(14 + lw() * 16)}%)`);
-    stage.style.setProperty("--label-edge", `linear-gradient(${edge}, rgb(242 232 213 / ${(0.08 + lw() * 0.14).toFixed(2)}), transparent ${Math.round(6 + lw() * 10)}%)`);
-    stage.style.setProperty("--scuff-spine", spineScuffs(game));
-    stage.style.setProperty("--scuff-booklet", scuffs(wearSeed + 16, { w: 300, h: 400, count: 9, len: [8, 34], width: [0.4, 0.8], opacity: [0.1, 0.22] }));
+    const rub = `radial-gradient(circle at ${corner}, rgb(242 232 213 / ${(0.18 + lw() * 0.2).toFixed(2)}), transparent ${Math.round(14 + lw() * 16)}%)`;
+    const worn = `linear-gradient(${edge}, rgb(242 232 213 / ${(0.08 + lw() * 0.14).toFixed(2)}), transparent ${Math.round(6 + lw() * 10)}%)`;
+    skin = {
+      textures: {
+        "--scuff-front": scuffs(seed + 11, { count: 16, opacity: [0.07, 0.2], smudges: 3 }),
+        "--scuff-left": scuffs(seed + 12, { count: 10, opacity: [0.08, 0.18], smudges: 2, color: "#5a4634" }),
+        "--scuff-right": scuffs(seed + 13, { count: 10, opacity: [0.08, 0.18], smudges: 2, color: "#5a4634" }),
+        "--scuff-cart": scuffs(seed + 15, { w: 100, h: 115, count: 8, len: [4, 18], opacity: [0.1, 0.26] }),
+        "--scuff-cart-back": scuffs(seed + 18, { w: 100, h: 115, count: 8, len: [4, 18], opacity: [0.1, 0.26] }),
+        "--scuff-spine": spineScuffs(game),
+        "--scuff-booklet": scuffs(seed + 16, { w: 300, h: 400, count: 9, len: [8, 34], width: [0.4, 0.8], opacity: [0.1, 0.22] })
+      },
+      label: { "--label-rub": rub, "--label-edge": worn },
+      tornCover: tornEdge(seed, COVER_WEAR),
+      tornPage: tornEdge(seed + 1, PAGE_WEAR)
+    };
+    skins.set(game, skin);
+    return skin;
+  }
+  const warmed = new Set();
+  let warmBox = null;
+  function warm(game) {
+    if (warmed.has(game)) return;
+    warmed.add(game);
+    if (!warmBox) {
+      warmBox = h("div", { class: "warm", "aria-hidden": "true" },
+        h("div", { class: "info-card" },
+          h("h2", { class: "info-title" }, game.title),
+          h("p", { class: "info-meta" }, [game.released, game.genre].filter(Boolean).join(" · ")),
+          h("p", {}, game.description || game.title),
+          h("section", { class: "info-notes" },
+            h("h3", { class: "info-heading" }, "Note:"),
+            h("p", {}, game.commentary || game.description || game.title))));
+      document.body.append(warmBox);
+    }
+    const skin = skinFor(game);
+    const textures = h("i", {});
+    textures.style.backgroundImage = Object.values(skin.textures).join(", ");
+    const outlines = h("i", {});
+    for (const name of ["-webkit-mask-image", "mask-image"]) outlines.style.setProperty(name, `${skin.tornCover}, ${skin.tornPage}`);
+    warmBox.append(textures, outlines);
+  }
+  function fillCase(game) {
+    paint(stage, game);
+    const skin = skinFor(game);
+    for (const [name, value] of Object.entries({ ...skin.textures, ...skin.label })) stage.style.setProperty(name, value);
     $("#case-spine").replaceChildren(spineArt(game));
     $("#case-front").replaceChildren(
       h("div", { class: "insert" },
         h("div", { class: "insert-art" }, coverArt(game, ""))),
       h("div", { class: "cover-sheen", id: "cover-sheen" })
     );
-    const seed = hash(game.title);
-    const layer = (cls, layerSeed, wear, ...children) => {
+    const layer = (cls, torn, ...children) => {
       const node = h("div", { class: cls }, ...children);
-      node.style.setProperty("--torn-edge", tornEdge(layerSeed, wear));
+      node.style.setProperty("--torn-edge", torn);
       return node;
     };
     const manualWrap = $("#manual-wrap");
     manualWrap.replaceChildren(
-      layer("manual-page", seed + 1, PAGE_WEAR),
-      layer("manual", seed, COVER_WEAR, h("div", { class: "manual-art" }, coverArt(game, `${game.title} cover art`, "manual")))
+      layer("manual-page", skin.tornPage),
+      layer("manual", skin.tornCover, h("div", { class: "manual-art" }, coverArt(game, `${game.title} cover art`, "manual")))
     );
     const hasBooklet = !!(game.screenshots && game.screenshots.length && window.Booklet && window.Booklet.available());
     manualWrap.classList.toggle("is-openable", hasBooklet);
@@ -496,7 +547,7 @@
   const openPose = (p = pan) => pose((1 - p) * (dims.w + dims.d), 0, dims.d / 2);
   function setPan(p) {
     pan = p;
-    stage.style.setProperty("--pan-x", `${((0.5 - p) * (dims.w + dims.d)).toFixed(1)}px`);
+    caseShadow.style.setProperty("--pan-x", `${((0.5 - p) * (dims.w + dims.d)).toFixed(1)}px`);
     for (const dot of pagerDots) dot.setAttribute("aria-current", String(Math.round(p) === Number(dot.dataset.panel)));
   }
   function shelfPose(btn) {
@@ -558,16 +609,16 @@
     if (cover && !cover.complete) {
       await Promise.race([cover.decode().catch(() => {}), new Promise((r) => setTimeout(r, 250))]);
     }
-    stage.hidden = false;
     measure();
+    stage.hidden = false;
     setPan(dims.narrow ? 0 : 0.5);
     const start = shelfPose(btn);
+    closeBtn.focus({ preventScroll: true });
     caseEl.style.transform = start;
     setHinges(90);
     stage.classList.add("is-shut");
     btn.classList.add("is-out");
     room.inert = true;
-    closeBtn.focus({ preventScroll: true });
     if (reduceMotion.matches) {
       caseEl.style.transform = openPose();
       setHinges(0);

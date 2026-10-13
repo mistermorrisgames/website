@@ -357,6 +357,20 @@ body::before {
   transition: transform 380ms cubic-bezier(.2, .8, .2, 1);
 }
 .stage.is-dragging .case-shadow { transition: none; }
+.warm {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+  contain: strict;
+  background-image: var(--grain-paper), var(--insert-pattern);
+}
+.warm i { position: absolute; inset: 0; }
+.warm .info-card { width: 300px; }
 .dialog { position: absolute; inset: 0; pointer-events: none; }
 .close-btn {
   position: absolute;
